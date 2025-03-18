@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS candles;
 
--- Create the candles table
+-- NOTE RN IT DOESNT WORK.... "Incorrect datetime value: '2011' for column 'ind_time' at row 1")
+-- Create the candles table..
 CREATE TABLE candles(
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255),
