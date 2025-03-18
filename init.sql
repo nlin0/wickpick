@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS candles;
 CREATE TABLE candles (
     candle_id INT,
     cat TEXT,                     

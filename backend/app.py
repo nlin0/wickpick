@@ -8,11 +8,16 @@ from helpers.MySQLDatabaseHandler import MySQLDatabaseHandler
 # Feel free to use a config.py or settings.py with a global export variable
 os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..",os.curdir))
 
+# CREDS
+file_path = "/Users/nicolelin/Desktop/current/secure/key.txt"
+
 # These are the DB credentials for your OWN MySQL
 # Don't worry about the deployment credentials, those are fixed
 # You can use a different DB name if you want to
 LOCAL_MYSQL_USER = "root"
-LOCAL_MYSQL_USER_PASSWORD = "2004Drexel"
+with open(file_path, "r") as file:
+    LOCAL_MYSQL_USER_PASSWORD = file.read().strip()
+# LOCAL_MYSQL_USER_PASSWORD = ""
 LOCAL_MYSQL_PORT = 3306
 LOCAL_MYSQL_DATABASE = "wickpick"
 
