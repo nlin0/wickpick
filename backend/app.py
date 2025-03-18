@@ -2,12 +2,11 @@ import json
 import os
 from flask import Flask, render_template, request
 from flask_cors import CORS
-from helpers.MySQLDatabaseHandler import MySQLDatabaseHandler
 import pandas as pd
 
 # ROOT_PATH for linking with all your files. 
 # Feel free to use a config.py or settings.py with a global export variable
-os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..",os.curdir))
+os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..", os.curdir))
 
 # Get the directory of the current script
 current_directory = os.path.dirname(os.path.abspath(__file__))
@@ -18,29 +17,65 @@ json_file_path = os.path.join(current_directory, 'init.json')
 # Assuming your JSON data is stored in a file named 'init.json'
 with open(json_file_path, 'r') as file:
     data = json.load(file)
-    episodes_df = pd.DataFrame(data['episodes'])
-    reviews_df = pd.DataFrame(data['reviews'])
+    
+    # Convert the main dataset into a DataFrame
+    candles_data = []
+    reviews_data = []
+    
+    for key, candle in data.items():
+        # Creating a DataFrame for candles
+        candle_info = {
+            'id': key,
+            'name': candle['name'],
+            'category': candle['category'],
+            'description': candle['description'],
+            'overall_rating': candle['overall_rating'],
+            'overall_reviewcount': candle['overall_reviewcount'],
+            'link': candle['link'],
+            'img_url': candle['img_url']
+        }
+        candles_data.append(candle_info)
+        
+        # Creating a DataFrame for reviews
+        for review_key, review in candle['reviews'].items():
+            review_info = {
+                'candle_id': key,
+                'review_body': review['review_body'],
+                'rating_value': review['rating_value']
+            }
+            reviews_data.append(review_info)
+    
+    candles_df = pd.DataFrame(candles_data)
+    reviews_df = pd.DataFrame(reviews_data)
 
 app = Flask(__name__)
 CORS(app)
 
-# Sample search using json with pandas
+# Sample search function that uses the new dataset
 def json_search(query):
     matches = []
-    merged_df = pd.merge(episodes_df, reviews_df, left_on='id', right_on='id', how='inner')
-    matches = merged_df[merged_df['title'].str.lower().str.contains(query.lower())]
-    matches_filtered = matches[['title', 'descr', 'imdb_rating']]
+    
+    # Searching in candle name, description, and reviews
+    matches = candles_df[candles_df['name'].str.lower().str.contains(query.lower()) | 
+                         candles_df['description'].str.lower().str.contains(query.lower())]
+    
+    # Merging candles with reviews on candle_id
+    merged_df = pd.merge(matches, reviews_df, left_on='id', right_on='candle_id', how='inner')
+    
+    # Filtering to relevant columns
+    matches_filtered = merged_df[['name', 'category', 'description', 'overall_rating', 'overall_reviewcount', 'review_body', 'rating_value']]
+    
     matches_filtered_json = matches_filtered.to_json(orient='records')
     return matches_filtered_json
 
 @app.route("/")
 def home():
-    return render_template('base.html',title="sample html")
+    return render_template('base.html', title="Candle Search")
 
-@app.route("/episodes")
-def episodes_search():
-    text = request.args.get("title")
+@app.route("/candles")
+def candles_search():
+    text = request.args.get("query")
     return json_search(text)
 
 if 'DB_NAME' not in os.environ:
-    app.run(debug=True,host="0.0.0.0",port=5000)
+    app.run(debug=True, host="0.0.0.0", port=5000)
