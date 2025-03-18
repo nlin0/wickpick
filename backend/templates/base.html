@@ -15,7 +15,7 @@
     <div class="full-body-container">
         <div class="top-text">
             <div class="logo-header">
-                <img class="wickpick-img" src="{{ url_for('static', filename='images/wickpick.png') }}"/>
+                <img class="wickpick-img" src="{{ url_for('static', filename='images/wickpick.png') }}" />
             </div>
             <div class="input-box" onclick="sendFocus()">
                 <img class="search-icon" src="{{ url_for('static', filename='images/mag.png') }}" />
@@ -41,10 +41,11 @@
 
     <script>
 
-        function answerBoxTemplate(title, titleDesc) {
+        function answerBoxTemplate(title, titleDesc, rating) {
             return `<div class=''>
                 <h3 class='episode-title'>${title}</h3>
                 <p class='episode-desc'>${titleDesc}</p>
+                <p class='episode-rating'>IMDB Rating: ${rating}</p>
             </div>`
         }
 
@@ -60,10 +61,11 @@
                 .then((data) => data.forEach(row => {
 
                     let tempDiv = document.createElement("div")
-                    tempDiv.innerHTML = answerBoxTemplate(row.title, row.descr)
+                    tempDiv.innerHTML = answerBoxTemplate(row.title, row.descr, row.imdb_rating)
                     document.getElementById("answer-box").appendChild(tempDiv)
                 }));
 
         }
+
     </script>
 </body>
