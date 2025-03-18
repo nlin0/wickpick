@@ -20,7 +20,14 @@ class Similarity:
     # Takes in string query and transforms it
     def transform_query(self, query):
         return self.tfidf_vectorizer.transform([query]).toarray()[0]
+    
+    def retrieve_top_k_candles(self, query, k):
+        # Get cosine similarity between query and all candles
+        cosine_sims = [self.cosine_sim_query_candles(query, i) for i in range(len(self.candles))]
+        sorted_candles = sorted(range(len(cosine_sims)), key = lambda i: cosine_sims[i], reverse = True)
+        return
 
+    # SIMILARITY FUNCTIONS
     # Get cosine similarity between two candles
     def cosine_sim_candles(self, id1, id2):
         # cosine_similarities = sklearn.metrics.pairwise.cosine_similarity(self.tfidf_reviews, self.tfidf_reviews[candle_id])
@@ -28,7 +35,7 @@ class Similarity:
         rev2 = self.tfidf_reviews[id2]
         cosine_sim = np.dot(rev1, rev2) / (np.linalg.norm(rev1) * np.linalg.norm(rev2))
         return cosine_sim
-    
+
     # Get cosine similarity between a query and a candle
     def cosine_sim_query_candles(self, query, candle_id):
         # print()
