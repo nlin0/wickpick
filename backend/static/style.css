@@ -12,6 +12,12 @@
     flex-direction: column;
 }
 
+body {
+    background-color: #DAC6B5;
+     /* #B9D8C2; */
+    /* #B0D0D3; */
+    /* background-color: #DAC6B5; */
+}
 
 .wickpick-img {
     display:flex;
@@ -49,7 +55,9 @@
     margin-top: 10px;
     padding: 12px;
     width: 600px;
+    background-color: white;
 }
+
 
 .input-box img {
     height: 20px;
@@ -74,6 +82,7 @@
     width: 700px;
     margin-top: 50px;
 }
+
 
 .candle-photo {
     width: 30%;
