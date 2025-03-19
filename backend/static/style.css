@@ -73,10 +73,19 @@
     margin-top: 50px;
 }
 
-.episode-title {
+.candle-photo {
+    width: 30%;
+
+}
+
+.candle-name {
     font-family: 'Kanit', sans-serif;
 }
 
-.episode-desc {
+.candle-desc {
     font-family: 'Montserrat', sans-serif;
+}
+
+.hidden {
+    display: none; 
 }

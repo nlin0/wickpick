@@ -26,21 +26,10 @@
 
         </div>
 
-
-        <!-- ########## CANDLE DISPLAY ########## -->
-
-        <!-- <div class="candle-display-container">
-      <div class="candle-container">
-        <img src="/backend/static/images/candle.png" alt="candle" class="candle-img">
-      </div>
-    </div> -->
-
-
     </div>
 
 
     <script>
-
         function answerBoxTemplate(name, url, desc, rating, numReviews, img_url) {
             return `<div class='candle-item'>
                 <div class="candle-img-container">
@@ -60,6 +49,7 @@
             document.getElementById("answer-box").innerHTML = ""
 
             let query = document.getElementById("filter-text-val").value;
+            
             console.log(query);
             fetch("/candles?" + new URLSearchParams({ query: query }).toString())
                 .then((response) => response.json())
