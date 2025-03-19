@@ -17,23 +17,34 @@ class Similarity:
         # print(self.tfidf_vectorizer.get_feature_names_out())
         # print(self.tfidf_reviews)
 
+    # HELPER FUNCTIONS
     # Takes in string query and transforms it
     def transform_query(self, query):
         return self.tfidf_vectorizer.transform([query]).toarray()[0]
     
-    def retrieve_top_k_candles(self, query, k):
-        # Get cosine similarity between query and all candles
-        cosine_sims = [self.cosine_sim_query_candles(query, i) for i in range(len(self.candles))]
-        sorted_candles = sorted(range(len(cosine_sims)), key = lambda i: cosine_sims[i], reverse = True)
-        return
+    def calc_cosine_sim(self, a, b):
+        return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
 
     # SIMILARITY FUNCTIONS
+    def retrieve_top_k_candles(self, query, k):
+        transformed_query = self.transform_query(query)
+        if np.linalg.norm(transformed_query) == 0:
+            return []
+        
+        sims = []
+        for id in range(len(self.candles)):
+            cosine_sim = self.calc_cosine_sim(transformed_query, self.tfidf_reviews[id])
+            sims.append((id, cosine_sim))
+
+        sims.sort(key=lambda x: x[1], reverse=True)
+        return [self.candles[x[0]] for x in sims[:k]]
+
     # Get cosine similarity between two candles
     def cosine_sim_candles(self, id1, id2):
         # cosine_similarities = sklearn.metrics.pairwise.cosine_similarity(self.tfidf_reviews, self.tfidf_reviews[candle_id])
         rev1 = self.tfidf_reviews[id1]
         rev2 = self.tfidf_reviews[id2]
-        cosine_sim = np.dot(rev1, rev2) / (np.linalg.norm(rev1) * np.linalg.norm(rev2))
+        cosine_sim = self.calc_cosine_sim(rev1, rev2)
         return cosine_sim
 
     # Get cosine similarity between a query and a candle
@@ -44,9 +55,9 @@ class Similarity:
         # print(transformed_query)
         # print(candle_rev)
         norm_query = np.linalg.norm(transformed_query)
-        if norm_query == 0:
+        if np.linalg.norm(transformed_query) == 0:
             return 0
-        cosine_sim = np.dot(transformed_query, candle_rev) / (norm_query * np.linalg.norm(candle_rev))
+        cosine_sim = self.calc_cosine_sim(transformed_query, candle_rev)
         return cosine_sim
     
     def rocchio(self, query, relevant, irrelevant, alpha = 1, beta = 0.75, gamma = 0.15):
