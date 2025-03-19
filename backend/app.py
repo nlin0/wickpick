@@ -3,6 +3,7 @@ import os
 from flask import Flask, render_template, request
 from flask_cors import CORS
 import pandas as pd
+from flask import url_for
 
 # ROOT_PATH for linking with all your files.
 # Feel free to use a config.py or settings.py with a global export variable
@@ -51,20 +52,16 @@ with open(json_file_path, 'r') as file:
 app = Flask(__name__)
 CORS(app)
 
-# Sample search function that uses the new dataset
 def json_search(query):
     matches = []
-    
-    # Searching in candle name, description, and reviews
     matches = candles_df[candles_df['name'].str.lower().str.contains(query.lower()) | 
                          candles_df['description'].str.lower().str.contains(query.lower())]
-    
-    # Merging candles with reviews on candle_id
+
     merged_df = pd.merge(matches, reviews_df, left_on='id', right_on='candle_id', how='inner')
-    
-    # Filtering to relevant columns
-    matches_filtered = merged_df[['name', 'category', 'description', 'overall_rating', 'overall_reviewcount', 'review_body', 'rating_value']]
-    
+    merged_df['img_url'] = request.url_root + 'static/candle-' + merged_df['img_url']
+
+    matches_filtered = merged_df[['name', 'category', 'description', 'overall_rating', 
+                                  'overall_reviewcount', 'img_url', 'link', 'review_body', 'rating_value']]
     matches_filtered_json = matches_filtered.to_json(orient='records')
     return matches_filtered_json
 

@@ -41,11 +41,14 @@
 
     <script>
 
-        function answerBoxTemplate(title, titleDesc, rating) {
-            return `<div class=''>
-                <h3 class='episode-title'>${title}</h3>
-                <p class='episode-desc'>${titleDesc}</p>
-                <p class='episode-rating'>IMDB Rating: ${rating}</p>
+        function answerBoxTemplate(name, url, desc, rating, numReviews, img_url) {
+            return `<div class='candle-item'>
+                <div class="candle-img-container">
+                    <img class="candle-photo" src="${img_url}" alt="${name}">
+                </div>
+                <h3 class='candle-name'><a href="${url}">${name}</a></h3>
+                <p class='candle-desc'>${desc}</p>
+                <p class='candle-rating'>${rating} Stars (${numReviews} reviews)</p>
             </div>`
         }
 
@@ -55,15 +58,34 @@
 
         function filterText() {
             document.getElementById("answer-box").innerHTML = ""
-            console.log(document.getElementById("filter-text-val").value)
-            fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
-                .then((response) => response.json())
-                .then((data) => data.forEach(row => {
 
-                    let tempDiv = document.createElement("div")
-                    tempDiv.innerHTML = answerBoxTemplate(row.title, row.descr, row.imdb_rating)
-                    document.getElementById("answer-box").appendChild(tempDiv)
-                }));
+            let query = document.getElementById("filter-text-val").value;
+            console.log(query);
+            fetch("/candles?" + new URLSearchParams({ query: query }).toString())
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.length === 0) {
+                        document.getElementById("answer-box").innerHTML = "<p>No candles found.</p>";
+                        return;
+                    }
+
+                    data.forEach(row => {
+                        let tempDiv = document.createElement("div");
+                        tempDiv.innerHTML = answerBoxTemplate(
+                            row.name, row.link, row.description, row.overall_rating, row.overall_reviewcount, row.img_url
+                        );
+                        document.getElementById("answer-box").appendChild(tempDiv);
+                    });
+                })
+            // fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
+            // .then((response) => response.json())
+            // .then((data) => data.forEach(row => {
+
+            //     let tempDiv = document.createElement("div")
+            //     tempDiv.innerHTML = answerBoxTemplate(row.title, row.descr, row.imdb_rating)
+            //     document.getElementById("answer-box").appendChild(tempDiv)
+            // }));
+
 
         }
 
