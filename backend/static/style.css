@@ -14,10 +14,12 @@
 
 
 .wickpick-img {
+    display:flex;
     width: 50%;
     margin: 0px;
     margin-left: -5%;
-    margin-bottom: -8%
+    margin-bottom: -6.8%;
+
 }
 
 .logo-header {
