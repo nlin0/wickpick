@@ -6,16 +6,12 @@ from scipy.sparse.linalg import svds
 import sklearn
 from models.candle import Candle
 
-import os
-import json
-
 # temporary class for demonstration purposes
 class TempSim:
     def __init__(self, candles_df, reviews_df):
         print("init")
         self.candles = candles_df
         print(reviews_df)
-        
         self.reviews = reviews_df['review_body'].tolist()
         print(self.reviews)
         self.review_idx_to_candle_idx = {i: reviews_df.iloc[i]['candle_id'] for i in range(len(reviews_df))}

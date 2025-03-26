@@ -47,7 +47,7 @@ with open(json_file_path, 'r') as file:
                 'rating_value': review['rating_value']
             }
         reviews_data.append(review_info)
-    
+
     candles_df = pd.DataFrame(candles_data)
     reviews_df = pd.DataFrame(reviews_data)
 
@@ -70,17 +70,17 @@ def json_search(query):
     return matches_filtered_json
 
 def cosine_sim_search(query):
-    sim_df = similarity.retrieve_top_k_candles(query, 5)
+    sim_df = similarity.retrieve_top_k_candles(query, 15)
     print(sim_df)
     sim_df['img_url'] = request.url_root + 'static/candle-' + sim_df['img_url']
-    
+
     # Merge with reviews like in json_search
     merged_df = pd.merge(sim_df, reviews_df, left_on='id', right_on='candle_id', how='inner')
-    
+
     # Filter columns to match json_search output
     filtered_df = merged_df[['name', 'category', 'description', 'overall_rating', 
                            'overall_reviewcount', 'img_url', 'link', 'review_body', 'rating_value']]
-    
+
     return filtered_df.to_json(orient='records')
 
 # singletons
