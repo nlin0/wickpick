@@ -4,7 +4,61 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import normalize
 from scipy.sparse.linalg import svds
 import sklearn
-from candle import Candle
+from models.candle import Candle
+
+import os
+import json
+
+# temporary class for demonstration purposes
+class TempSim:
+    def __init__(self, candles_df, reviews_df):
+        print("init")
+        self.candles = candles_df
+        print(reviews_df)
+        
+        self.reviews = reviews_df['review_body'].tolist()
+        print(self.reviews)
+        self.review_idx_to_candle_idx = {i: reviews_df.iloc[i]['candle_id'] for i in range(len(reviews_df))}
+        self.tfidf_vectorizer = TfidfVectorizer(stop_words = 'english')
+        self.tfidf_reviews = self.tfidf_vectorizer.fit_transform([r for r in self.reviews]).toarray()
+
+        # print(self.tfidf_vectorizer.get_feature_names_out())
+        # print(self.tfidf_reviews)
+
+    # HELPER FUNCTIONS
+    # Takes in string query and transforms it
+    def transform_query(self, query):
+        return self.tfidf_vectorizer.transform([query]).toarray()[0]
+    
+    def helper_cosine_sim(self, vec1, vec2):
+        return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
+
+    # SIMILARITY FUNCTIONS
+    # Get cosine similarity between two candles
+    def cosine_sim_candles(self, id1, id2):
+        rev1 = self.tfidf_reviews[id1]
+        rev2 = self.tfidf_reviews[id2]
+        cosine_sim = self.helper_cosine_sim(rev1, rev2)
+        return cosine_sim
+
+    # Get cosine similarity between a query and a candle
+    def cosine_sim_query_candles(self, query, candle_id):
+        transformed_query = self.transform_query(query)
+        candle_rev = self.tfidf_reviews[candle_id]
+        norm_query = np.linalg.norm(transformed_query)
+        if norm_query == 0:
+            return 0
+        cosine_sim = self.helper_cosine_sim(transformed_query, candle_rev)
+        return cosine_sim
+    
+    # Retrieve top k candles based on cosine similarity
+    def retrieve_top_k_candles(self, query, k):
+        # Get cosine similarity between query and all candles
+        cosine_sims = [self.cosine_sim_query_candles(query, i) for i in range(len(self.reviews))]
+        # Sort candles by similarity score and return top k
+        sorted_indices = sorted(range(len(cosine_sims)), key=lambda i: cosine_sims[i], reverse=True)
+        candle_ids = [self.review_idx_to_candle_idx[i] for i in sorted_indices[:k]]
+        return self.candles.iloc[candle_ids]
 
 class Similarity:
     def __init__(self, candles):
