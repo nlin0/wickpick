@@ -23,9 +23,12 @@ class PandasSim:
         self.review_idx_to_candle_idx = {i: reviews_df.iloc[i]['candle_id'] for i in range(len(reviews_df))}
         # self.tfidf_vectorizer = TfidfVectorizer(tokenizer=self.custom_tokenizer, stop_words='english')
         self.tfidf_vectorizer = TfidfVectorizer(stop_words='english')
-        self.tfidf_reviews = self.tfidf_vectorizer.fit_transform([r if r is not None else "" for r in self.reviews]).toarray()
-        print(self.tfidf_reviews)
-        self.tfidf_description = self.tfidf_vectorizer.fit_transform([r if r is not None else "" for r in self.candles['description']]).toarray()
+        # First fit on all text to establish the vocabulary
+        all_text = [r if r is not None else "" for r in self.reviews] + [d if d is not None else "" for d in self.candles['description']]
+        self.tfidf_vectorizer.fit(all_text)
+        # Then transform each separately
+        self.tfidf_reviews = self.tfidf_vectorizer.transform([r if r is not None else "" for r in self.reviews]).toarray()
+        self.tfidf_description = self.tfidf_vectorizer.transform([r if r is not None else "" for r in self.candles['description']]).toarray()
 
     # HELPER FUNCTIONS
     # def custom_tokenizer(self, corpus):
