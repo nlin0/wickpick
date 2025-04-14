@@ -14,7 +14,7 @@ from scipy.sparse.linalg import svds
 
 class PandasSim:
     def __init__(self, candles_df, reviews_df):
-        print("PD Sims init")
+        # print("PD Sims init")
         # nltk.download('wordnet')
         self.candles = candles_df
         # print(reviews_df)
@@ -23,7 +23,7 @@ class PandasSim:
         self.review_idx_to_candle_idx = {i: reviews_df.iloc[i]['candle_id'] for i in range(len(reviews_df))}
         # self.tfidf_vectorizer = TfidfVectorizer(tokenizer=self.custom_tokenizer, stop_words='english')
         self.tfidf_vectorizer = TfidfVectorizer(stop_words='english')
-        self.tfidf_reviews = self.tfidf_vectorizer.fit_transform([r for r in self.reviews if r is not None]).toarray()
+        self.tfidf_reviews = self.tfidf_vectorizer.fit_transform([r if r is not None else "" for r in self.reviews]).toarray()
 
     # HELPER FUNCTIONS
     # def custom_tokenizer(self, corpus):
