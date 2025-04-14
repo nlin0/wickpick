@@ -21,8 +21,8 @@ class PandasSim:
         self.reviews = reviews_df['review_body'].tolist()
         # print(self.reviews)
         self.review_idx_to_candle_idx = {i: reviews_df.iloc[i]['candle_id'] for i in range(len(reviews_df))}
-        # self.tfidf_vectorizer = TfidfVectorizer(tokenizer=self.custom_tokenizer, stop_words='english')
-        self.tfidf_vectorizer = TfidfVectorizer(stop_words='english')
+        self.tfidf_vectorizer = TfidfVectorizer(tokenizer=self.custom_tokenizer, stop_words='english')
+        # self.tfidf_vectorizer = TfidfVectorizer(stop_words='english')
         self.tfidf_reviews = self.tfidf_vectorizer.fit_transform([r for r in self.reviews]).toarray()
 
     # HELPER FUNCTIONS
