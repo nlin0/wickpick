@@ -26,11 +26,11 @@ class PandasSim:
         self.tfidf_reviews = self.tfidf_vectorizer.fit_transform([r for r in self.reviews]).toarray()
 
     # HELPER FUNCTIONS
-    def custom_tokenizer(self, corpus):
-        # stemmer = SnowballStemmer('english')
-        stemmer = WordNetLemmatizer()
-        words = re.sub(r"[^A-Za-z0-9\-]", " ", corpus).lower().split()
-        return [stemmer.lemmatize(word) for word in words]
+    # def custom_tokenizer(self, corpus):
+    #     # stemmer = SnowballStemmer('english')
+    #     stemmer = WordNetLemmatizer()
+    #     words = re.sub(r"[^A-Za-z0-9\-]", " ", corpus).lower().split()
+    #     return [stemmer.lemmatize(word) for word in words]
     
     # Takes in string query and transforms it
     def transform_query(self, query):
