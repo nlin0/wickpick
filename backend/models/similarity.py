@@ -24,6 +24,7 @@ class PandasSim:
         # self.tfidf_vectorizer = TfidfVectorizer(tokenizer=self.custom_tokenizer, stop_words='english')
         self.tfidf_vectorizer = TfidfVectorizer(stop_words='english')
         self.tfidf_reviews = self.tfidf_vectorizer.fit_transform([r if r is not None else "" for r in self.reviews]).toarray()
+        self.tfidf_description = self.tfidf_vectorizer.fit_transform([r if r is not None else "" for r in self.candles['description']]).toarray()
 
     # HELPER FUNCTIONS
     # def custom_tokenizer(self, corpus):
@@ -60,7 +61,12 @@ class PandasSim:
     # Retrieve top k candles based on cosine similarity
     def retrieve_top_k_candles(self, query, k):
         # Get cosine similarity between query and all candles
-        cosine_sims = [self.cosine_sim_query_candles(query, i) for i in range(len(self.reviews))]
+        cosine_sims_revs = [self.cosine_sim_query_candles(query, i) for i in range(len(self.reviews))]
+        cosine_sims_desc = [self.helper_cosine_sim(self.tfidf_description[i], self.transform_query(query)) for i in range(len(self.candles))]
+        # Combine the two similarity scores
+        cosine_sims = [0.5 * rev + 0.5 * desc for rev, desc in zip(cosine_sims_revs, cosine_sims_desc)]
+        # Normalize the scores
+        cosine_sims = normalize(np.array(cosine_sims).reshape(1, -1), norm='l2')[0]
         # Sort candles by similarity score and return top k
         sorted_indices = sorted(range(len(cosine_sims)), key=lambda i: cosine_sims[i], reverse=True)
         candle_ids = [self.review_idx_to_candle_idx[i] for i in sorted_indices[:k]]

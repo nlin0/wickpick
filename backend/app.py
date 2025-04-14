@@ -88,6 +88,8 @@ similarity = PandasSim(candles_df, reviews_df)
 def cosine_sim_search(query):
     sim_df = similarity.retrieve_top_k_candles(query, 15)
 
+    print("sim_df", sim_df)
+
     merged_df = pd.merge(sim_df, reviews_df, left_on='id', right_on='candle_id', how='inner')
 
     merged_df['img_url'] = request.url_root + 'static/candle-' + merged_df['img_url']
