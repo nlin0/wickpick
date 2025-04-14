@@ -71,9 +71,12 @@ body {
     outline: 0;
 }
 
+.candle-display {
+    margin: 30px;
+}
+
 #answer-box {
     width: 100%;
-    margin: 10px;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 20px;
