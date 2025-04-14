@@ -1,13 +1,12 @@
+import re
 import pandas as pd
 import numpy as np
 import sklearn
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import normalize
-
 from scipy.sparse.linalg import svds
-
-import nltk 
+import nltk
 from nltk.stem.snowball import SnowballStemmer
 
 # from models.candle import Candle
@@ -19,12 +18,16 @@ class PandasSim:
         # print(reviews_df)
         self.reviews = reviews_df['review_body'].tolist()
         # print(self.reviews)
-        stemmer = SnowballStemmer('english')
         self.review_idx_to_candle_idx = {i: reviews_df.iloc[i]['candle_id'] for i in range(len(reviews_df))}
-        self.tfidf_vectorizer = TfidfVectorizer(stop_words = 'english')
+        self.tfidf_vectorizer = TfidfVectorizer(tokenizer=self.stemming_tokenizer, stop_words='english')
         self.tfidf_reviews = self.tfidf_vectorizer.fit_transform([r for r in self.reviews]).toarray()
 
     # HELPER FUNCTIONS
+    def stemming_tokenizer(str_input):
+        stemmer = SnowballStemmer('english')
+        words = re.sub(r"[^A-Za-z0-9\-]", " ", str_input).lower().split()
+        return [stemmer.stem(word) for word in words]
+    
     # Takes in string query and transforms it
     def transform_query(self, query):
         return self.tfidf_vectorizer.transform([query]).toarray()[0]
