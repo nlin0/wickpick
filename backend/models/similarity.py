@@ -24,6 +24,7 @@ class PandasSim:
         # self.tfidf_vectorizer = TfidfVectorizer(tokenizer=self.custom_tokenizer, stop_words='english')
         self.tfidf_vectorizer = TfidfVectorizer(stop_words='english')
         self.tfidf_reviews = self.tfidf_vectorizer.fit_transform([r if r is not None else "" for r in self.reviews]).toarray()
+        print(self.tfidf_reviews)
         self.tfidf_description = self.tfidf_vectorizer.fit_transform([r if r is not None else "" for r in self.candles['description']]).toarray()
 
     # HELPER FUNCTIONS
@@ -69,8 +70,22 @@ class PandasSim:
         cosine_sims = normalize(np.array(cosine_sims).reshape(1, -1), norm='l2')[0]
         # Sort candles by similarity score and return top k
         sorted_indices = sorted(range(len(cosine_sims)), key=lambda i: cosine_sims[i], reverse=True)
-        candle_ids = [self.review_idx_to_candle_idx[i] for i in sorted_indices[:k]]
-        return self.candles.iloc[candle_ids]
+        # candle_ids = [self.review_idx_to_candle_idx[i] for i in sorted_indices[:k]]
+         # ONLY USE UNIQUE CANDLE IDs
+        unique_candle_ids = []
+        seen_candle_ids = set()
+        
+        for i in sorted_indices:
+            candle_id = self.review_idx_to_candle_idx[i]
+            if candle_id not in seen_candle_ids:
+                unique_candle_ids.append(candle_id)
+                seen_candle_ids.add(candle_id)
+            
+            # Break if we've found k unique candles
+            if len(unique_candle_ids) == k:
+                break
+        
+        return self.candles.iloc[unique_candle_ids]
     
     def rocchio(self, query, relevant, irrelevant, alpha = 1, beta = 0.75, gamma = 0.15):
         # IMPLEMENT ROCCHIO HERE
