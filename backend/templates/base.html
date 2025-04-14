@@ -19,7 +19,7 @@
       </div>
       <div class="input-box" onclick="sendFocus()">
         <img class="search-icon" src="{{ url_for('static', filename='images/mag.png') }}" />
-        <input placeholder="search candles" id="filter-text-val" onkeyup="filterText()">
+        <input placeholder="search candles" id="filter-text-val" onkeydown="checkEnter(event)">
       </div>
     </div>
     <div class="candle-display">
@@ -32,6 +32,12 @@
 
 
   <script>
+    // searches when we use enter
+    function checkEnter(event) {
+      if (event.key === "Enter") {
+        filterText();
+      }
+    }
     function answerBoxTemplate(name, url, desc, rating, numReviews, img_url) {
       return `
         <div class='candle-item'>

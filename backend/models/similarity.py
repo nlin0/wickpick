@@ -6,23 +6,23 @@ from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import normalize
 from scipy.sparse.linalg import svds
-import nltk
-from nltk.stem.wordnet import WordNetLemmatizer
-from nltk.stem.snowball import SnowballStemmer
+# import nltk
+# from nltk.stem.wordnet import WordNetLemmatizer
+# from nltk.stem.snowball import SnowballStemmer
 
 # from models.candle import Candle
 
 class PandasSim:
     def __init__(self, candles_df, reviews_df):
         print("PD Sims init")
-        nltk.download('wordnet')
+        # nltk.download('wordnet')
         self.candles = candles_df
         # print(reviews_df)
         self.reviews = reviews_df['review_body'].tolist()
         # print(self.reviews)
         self.review_idx_to_candle_idx = {i: reviews_df.iloc[i]['candle_id'] for i in range(len(reviews_df))}
-        self.tfidf_vectorizer = TfidfVectorizer(tokenizer=self.custom_tokenizer, stop_words='english')
-        # self.tfidf_vectorizer = TfidfVectorizer(stop_words='english')
+        # self.tfidf_vectorizer = TfidfVectorizer(tokenizer=self.custom_tokenizer, stop_words='english')
+        self.tfidf_vectorizer = TfidfVectorizer(stop_words='english')
         self.tfidf_reviews = self.tfidf_vectorizer.fit_transform([r for r in self.reviews]).toarray()
 
     # HELPER FUNCTIONS
