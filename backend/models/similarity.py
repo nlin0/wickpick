@@ -7,6 +7,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import normalize
 from scipy.sparse.linalg import svds
 import nltk
+from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.stem.snowball import SnowballStemmer
 
 # from models.candle import Candle
@@ -19,14 +20,15 @@ class PandasSim:
         self.reviews = reviews_df['review_body'].tolist()
         # print(self.reviews)
         self.review_idx_to_candle_idx = {i: reviews_df.iloc[i]['candle_id'] for i in range(len(reviews_df))}
-        self.tfidf_vectorizer = TfidfVectorizer(tokenizer=self.stemming_tokenizer, stop_words='english')
+        self.tfidf_vectorizer = TfidfVectorizer(tokenizer=self.custom_tokenizer, stop_words='english')
         self.tfidf_reviews = self.tfidf_vectorizer.fit_transform([r for r in self.reviews]).toarray()
 
     # HELPER FUNCTIONS
-    def stemming_tokenizer(str_input):
-        stemmer = SnowballStemmer('english')
+    def custom_tokenizer(str_input):
+        # stemmer = SnowballStemmer('english')
+        stemmer = WordNetLemmatizer()
         words = re.sub(r"[^A-Za-z0-9\-]", " ", str_input).lower().split()
-        return [stemmer.stem(word) for word in words]
+        return [stemmer.lemmatize(word) for word in words]
     
     # Takes in string query and transforms it
     def transform_query(self, query):
