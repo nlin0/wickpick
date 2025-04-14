@@ -39,14 +39,26 @@ with open(json_file_path, 'r') as file:
         }
         candles_data.append(candle_info)
         
-        # Creating a DataFrame for reviews
-        for review_key, review in candle['reviews'].items():
-            review_info = {
-                'candle_id': key,
-                'review_body': review['review_body'],
-                'rating_value': review['rating_value']
-            }
-        reviews_data.append(review_info)
+        for review_id, reviews in candle['reviews'].items():
+            if not candle['reviews']:
+                continue
+            else:
+                review_info = {
+                    'candle_id': key,
+                    'review_body': reviews['review_body'],
+                    'rating_value': reviews['rating_value']
+                    }
+                reviews_data.append(review_info)
+
+
+
+        # for review_key, review in candle['reviews'].items():
+        #     review_info = {
+        #         'candle_id': key,
+        #         'review_body': review['review_body'],
+        #         'rating_value': review['rating_value']
+        #     }
+        # reviews_data.append(review_info)
 
     candles_df = pd.DataFrame(candles_data)
     reviews_df = pd.DataFrame(reviews_data)
