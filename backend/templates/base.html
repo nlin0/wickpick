@@ -2,88 +2,107 @@
 <html lang="en">
 
 <head>
-    <title>{% block title %}{% endblock %} - Flaskr</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit&family=Montserrat&family=Open+Sans:wght@500&display=swap"
-        rel="stylesheet">
+  <title>{% block title %}{% endblock %} - Flaskr</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit&family=Montserrat&family=Open+Sans:wght@500&display=swap"
+    rel="stylesheet">
 </head>
 
 <body>
-    <div class="full-body-container">
-        <div class="top-text">
-            <div class="logo-header">
-                <img class="wickpick-img" src="{{ url_for('static', filename='images/wickpick.gif') }}" />
-            </div>
-            <div class="input-box" onclick="sendFocus()">
-                <img class="search-icon" src="{{ url_for('static', filename='images/mag.png') }}" />
-                <input placeholder="search candles" id="filter-text-val" onkeyup="filterText()">
-            </div>
-        </div>
-        <div id="answer-box">
-
-        </div>
+  <div class="full-body-container">
+    <div class="top-text">
+      <div class="logo-header">
+        <img class="wickpick-img" src="{{ url_for('static', filename='images/wickpick.gif') }}" />
+      </div>
+      <div class="input-box" onclick="sendFocus()">
+        <img class="search-icon" src="{{ url_for('static', filename='images/mag.png') }}" />
+        <input placeholder="search candles" id="filter-text-val" onkeyup="filterText()">
+      </div>
+    </div>
+    <div id="answer-box">
 
     </div>
 
-
-    <script>
-        function answerBoxTemplate(name, url, desc, rating, numReviews, img_url) {
-            return `<div class='candle-item'>
-                <div class="candle-img-container">
-                    <img class="candle-photo" src="${img_url}" alt="${name}">
-                </div>
-                <h3 class='candle-name'><a href="${url}">${name}</a></h3>
-                <p class='candle-desc'>${desc}</p>
-                <p class='candle-rating'>${rating} Stars (${numReviews} reviews)</p>
-            </div>`
-        }
-
-        function sendFocus() {
-            document.getElementById('filter-text-val').focus()
-        }
-
-        function filterText() {
-            document.getElementById("answer-box").innerHTML = ""
-            let query = document.getElementById("filter-text-val").value;
-
-            if (query === "") {
-                document.getElementById("answer-box").innerHTML = ""
-                document.getElementById("answer-box").classList.add("hidden");
-                return;
-            }
-            console.log(query);
-            fetch("/candles?" + new URLSearchParams({ query: query }).toString())
-                .then((response) => response.json())
-                .then((data) => {
-                    if (data.length === 0) {
-                        document.getElementById("answer-box").innerHTML = "<p>No candles found.</p>";
-                        answerBox.classList.remove("hidden");
-                        return;
-                    }
-
-                    data.forEach(row => {
-                        let tempDiv = document.createElement("div");
-                        tempDiv.innerHTML = answerBoxTemplate(
-                            row.name, row.link, row.description, row.overall_rating, row.overall_reviewcount, row.img_url
-                        );
-                        document.getElementById("answer-box").appendChild(tempDiv);
-                    });
-                    document.getElementById("answer-box").classList.remove("hidden");
-                })
-            // fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
-            // .then((response) => response.json())
-            // .then((data) => data.forEach(row => {
-
-            //     let tempDiv = document.createElement("div")
-            //     tempDiv.innerHTML = answerBoxTemplate(row.title, row.descr, row.imdb_rating)
-            //     document.getElementById("answer-box").appendChild(tempDiv)
-            // }));
+  </div>
 
 
-        }
+  <script>
+    function answerBoxTemplate(name, url, desc, rating, numReviews, img_url) {
+      return `
+        <div class='candle-item'>
+          <div class="candle-child-container">
+            <div class="candle-img-container">
+              <img class="candle-photo" src="${img_url}" alt="${name}">
+            </div>
+              
+            <div id='candle-info'>
+              <h3 class='candle-name'><a href="${url}">${name}</a></h3>
+              <p class='candle-desc'>${desc}</p>
+              <p class='candle-rating'>${rating} Stars (${numReviews} reviews)</p>
+            </div>
+          </div>
+        </div>`
+    }
 
-    </script>
+    function sendFocus() {
+      document.getElementById('filter-text-val').focus()
+    }
+    function filterText() {
+      document.getElementById("answer-box").innerHTML = "";
+      let query = document.getElementById("filter-text-val").value;
+
+      if (query === "") {
+        document.getElementById("answer-box").innerHTML = "";
+        document.getElementById("answer-box").classList.add("hidden");
+        return;
+      }
+
+      fetch("/candles?" + new URLSearchParams({ query: query }).toString())
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.length === 0) {
+            document.getElementById("answer-box").innerHTML = "<p>No candles found.</p>";
+            document.getElementById("answer-box").classList.remove("hidden");
+            return;
+          }
+
+          data.forEach(row => {
+            let tempDiv = document.createElement("div");
+            tempDiv.innerHTML = answerBoxTemplate(
+              row.name, row.link, row.description, row.overall_rating, row.overall_reviewcount, row.img_url
+            );
+
+            tempDiv.firstElementChild.addEventListener("click", (e) => {
+              const allCandles = document.querySelectorAll(".candle-item");
+              allCandles.forEach(item => {
+                if (item !== tempDiv.firstElementChild) {
+                  item.classList.remove("expanded");
+                }
+              });
+
+              tempDiv.firstElementChild.classList.toggle("expanded");
+            });
+
+            document.getElementById("answer-box").appendChild(tempDiv);
+          });
+
+          document.getElementById("answer-box").classList.remove("hidden");
+        });
+    }
+    // fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
+    // .then((response) => response.json())
+    // .then((data) => data.forEach(row => {
+
+    //     let tempDiv = document.createElement("div")
+    //     tempDiv.innerHTML = answerBoxTemplate(row.title, row.descr, row.imdb_rating)
+    //     document.getElementById("answer-box").appendChild(tempDiv)
+    // }));
+
+
+
+
+  </script>
 </body>
