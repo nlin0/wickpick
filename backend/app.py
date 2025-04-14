@@ -4,7 +4,7 @@ from flask import Flask, render_template, request
 from flask_cors import CORS
 import pandas as pd
 from flask import url_for
-from models.similarity import PandasSim
+from models.similarity import Similarity, TempSim
 from models.ml import MLModel
 
 # ROOT_PATH for linking with all your files.
@@ -54,38 +54,38 @@ with open(json_file_path, 'r') as file:
 app = Flask(__name__)
 CORS(app)
 
-# singletons
-similarity = PandasSim(candles_df, reviews_df)
+def json_search(query):
+    matches = []
+    matches = candles_df[candles_df['name'].str.lower().str.contains(query.lower()) | 
+                         candles_df['description'].str.lower().str.contains(query.lower())]
 
-# helper functions
-# def json_search(query):
-#     matches = []
-#     matches = candles_df[candles_df['name'].str.lower().str.contains(query.lower()) | 
-#                          candles_df['description'].str.lower().str.contains(query.lower())]
+    merged_df = pd.merge(matches, reviews_df, left_on='id', right_on='candle_id', how='inner')
+    merged_df['img_url'] = request.url_root + 'static/candle-' + merged_df['img_url']
 
-#     merged_df = pd.merge(matches, reviews_df, left_on='id', right_on='candle_id', how='inner')
-#     merged_df['img_url'] = request.url_root + 'static/candle-' + merged_df['img_url']
+    matches_filtered = merged_df[['name', 'category', 'description', 'overall_rating', 
+                                  'overall_reviewcount', 'img_url', 'link', 'review_body', 'rating_value']]
+    matches_filtered_json = matches_filtered.to_json(orient='records')
 
-#     matches_filtered = merged_df[['name', 'category', 'description', 'overall_rating', 
-#                                   'overall_reviewcount', 'img_url', 'link', 'review_body', 'rating_value']]
-#     matches_filtered_json = matches_filtered.to_json(orient='records')
-
-#     print(matches_filtered_json)
-#     return matches_filtered_json
+    print(matches_filtered_json)
+    return matches_filtered_json
 
 def cosine_sim_search(query):
     sim_df = similarity.retrieve_top_k_candles(query, 15)
+    print(sim_df)
+    sim_df['img_url'] = request.url_root + 'static/candle-' + sim_df['img_url']
 
+    # Merge with reviews like in json_search
     merged_df = pd.merge(sim_df, reviews_df, left_on='id', right_on='candle_id', how='inner')
 
-    merged_df['img_url'] = request.url_root + 'static/candle-' + merged_df['img_url']
-
+    # Filter columns to match json_search output
     filtered_df = merged_df[['name', 'category', 'description', 'overall_rating', 
                            'overall_reviewcount', 'img_url', 'link', 'review_body', 'rating_value']]
 
     return filtered_df.to_json(orient='records')
 
-# Routes
+# singletons
+similarity = TempSim(candles_df, reviews_df)
+
 @app.route("/")
 def home():
     return render_template('base.html', title="Candle Search")
@@ -93,6 +93,7 @@ def home():
 @app.route("/candles")
 def candles_search():
     text = request.args.get("query")
+    # return json_search(text)
     return cosine_sim_search(text)
 
 if 'DB_NAME' not in os.environ:
