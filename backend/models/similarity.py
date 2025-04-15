@@ -64,31 +64,33 @@ class PandasSim:
     
     # Retrieve top k candles based on cosine similarity
     def retrieve_top_k_candles(self, query, k):
-        # Get cosine similarity between query and all candles
-        cosine_sims_revs = [self.cosine_sim_query_candles(query, i) for i in range(len(self.reviews))]
-        cosine_sims_desc = [self.helper_cosine_sim(self.tfidf_description[i], self.transform_query(query)) for i in range(len(self.candles))]
-        # Combine the two similarity scores
-        cosine_sims = [0.5 * rev + 0.5 * desc for rev, desc in zip(cosine_sims_revs, cosine_sims_desc)]
-        # Normalize the scores
-        cosine_sims = normalize(np.array(cosine_sims).reshape(1, -1), norm='l2')[0]
-        # Sort candles by similarity score and return top k
-        sorted_indices = sorted(range(len(cosine_sims)), key=lambda i: cosine_sims[i], reverse=True)
-        # candle_ids = [self.review_idx_to_candle_idx[i] for i in sorted_indices[:k]]
-         # ONLY USE UNIQUE CANDLE IDs
-        unique_candle_ids = []
-        seen_candle_ids = set()
-        
-        for i in sorted_indices:
+        review_sims = {}
+        for i in range(len(self.reviews)):
             candle_id = self.review_idx_to_candle_idx[i]
-            if candle_id not in seen_candle_ids:
-                unique_candle_ids.append(candle_id)
-                seen_candle_ids.add(candle_id)
-            
-            # Break if we've found k unique candles
-            if len(unique_candle_ids) == k:
-                break
+            sim = self.cosine_sim_query_candles(query, i)
+            if candle_id in review_sims:
+                review_sims[candle_id] = max(review_sims[candle_id], sim)
+            else:
+                review_sims[candle_id] = sim
         
-        return self.candles.iloc[unique_candle_ids]
+        desc_sims = {}
+        for i in range(len(self.candles)):
+            candle_id = i  
+            desc_sim = self.helper_cosine_sim(self.tfidf_description[i], self.transform_query(query))
+            desc_sims[candle_id] = desc_sim
+        
+        combined_sims = {}
+        for candle_id in set(review_sims.keys()) | set(desc_sims.keys()):
+            rev_sim = review_sims.get(candle_id, 0)
+            desc_sim = desc_sims.get(candle_id, 0)
+            combined_sims[candle_id] = 0.5 * rev_sim + 0.5 * desc_sim
+        
+        # Sort candles by combined similarity score
+        sorted_candle_ids = sorted(combined_sims.keys(), key=lambda cid: combined_sims[cid], reverse=True)
+        
+        # Return top k unique candles
+        top_k_ids = sorted_candle_ids[:k]
+        return self.candles.iloc[top_k_ids]
     
     def rocchio(self, query, relevant, irrelevant, alpha = 1, beta = 0.75, gamma = 0.15):
         # IMPLEMENT ROCCHIO HERE
