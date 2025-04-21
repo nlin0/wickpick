@@ -38,16 +38,16 @@
         <div class='candle-item'>
           <div class="candle-child-container">
             <div class="card-front">
+              <h3 class='candle-name'><a href="${url}" target="_blank" class="candle-link">${name}</a></h3>
               <div class="candle-img-container">
                 <img class="candle-photo" src="${img_url}" alt="${name}">
               </div>
-              <h3 class='candle-name'><a href="${url}" target="_blank" class="candle-link">${name}</a></h3>
             </div>
             
             <div class="card-back">
-              <h3 class='card-back-title'>${name}</h3>
+              <h3 class='card-back-title'><a href="${url}" target="_blank" class="candle-link">${name}</a></h3>
               <p class='candle-desc'>${desc}</p>
-              <p class='candle-rating'>${rating} Stars (${numReviews} reviews)</p>
+              <p class='candle-rating'>${rating} <img class="rating-star" src="static/images/star.png" alt="stars"> (${numReviews} reviews)</p>
             </div>
           </div>
         </div>`
