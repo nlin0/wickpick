@@ -22,6 +22,7 @@
         <input placeholder="search candles" id="filter-text-val" onkeydown="checkEnter(event)">
       </div>
     </div>
+
     <div class="candle-display">
       <div id="answer-box">
 
@@ -32,22 +33,19 @@
 
 
   <script>
-    // searches when we use enter
-    function checkEnter(event) {
-      if (event.key === "Enter") {
-        filterText();
-      }
-    }
     function answerBoxTemplate(name, url, desc, rating, numReviews, img_url) {
       return `
         <div class='candle-item'>
           <div class="candle-child-container">
-            <div class="candle-img-container">
-              <img class="candle-photo" src="${img_url}" alt="${name}">
+            <div class="card-front">
+              <div class="candle-img-container">
+                <img class="candle-photo" src="${img_url}" alt="${name}">
+              </div>
+              <h3 class='candle-name'><a href="${url}" target="_blank" class="candle-link">${name}</a></h3>
             </div>
-              
-            <div id='candle-info'>
-              <h3 class='candle-name'><a href="${url}" target="_blank">${name}</a></h3>
+            
+            <div class="card-back">
+              <h3 class='card-back-title'>${name}</h3>
               <p class='candle-desc'>${desc}</p>
               <p class='candle-rating'>${rating} Stars (${numReviews} reviews)</p>
             </div>
@@ -55,9 +53,17 @@
         </div>`
     }
 
+    // searches when we use enter
+    function checkEnter(event) {
+      if (event.key === "Enter") {
+        filterText();
+      }
+    }
+
     function sendFocus() {
       document.getElementById('filter-text-val').focus()
     }
+
     function filterText() {
       document.getElementById("answer-box").innerHTML = "";
       let query = document.getElementById("filter-text-val").value;
@@ -77,21 +83,25 @@
             return;
           }
 
+          const uniqueCandles = {};
           data.forEach(row => {
+            if (!uniqueCandles[row.name]) {
+              uniqueCandles[row.name] = row;
+            }
+          });
+
+          const uniqueData = Object.values(uniqueCandles);
+
+          uniqueData.forEach(row => {
             let tempDiv = document.createElement("div");
             tempDiv.innerHTML = answerBoxTemplate(
               row.name, row.link, row.description, row.overall_rating, row.overall_reviewcount, row.img_url
             );
 
             tempDiv.firstElementChild.addEventListener("click", (e) => {
-              const allCandles = document.querySelectorAll(".candle-item");
-              allCandles.forEach(item => {
-                if (item !== tempDiv.firstElementChild) {
-                  item.classList.remove("expanded");
-                }
-              });
-
-              tempDiv.firstElementChild.classList.toggle("expanded");
+              if (!e.target.closest('a')) {
+                tempDiv.firstElementChild.classList.toggle("expanded");
+              }
             });
 
             document.getElementById("answer-box").appendChild(tempDiv);
@@ -100,6 +110,7 @@
           document.getElementById("answer-box").classList.remove("hidden");
         });
     }
+
     // fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
     // .then((response) => response.json())
     // .then((data) => data.forEach(row => {

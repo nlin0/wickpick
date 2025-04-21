@@ -87,17 +87,35 @@ similarity = PandasSim(candles_df, reviews_df)
 
 def cosine_sim_search(query):
     sim_df = similarity.retrieve_top_k_candles(query, 15)
-
-    print("sim_df", sim_df)
-
     merged_df = pd.merge(sim_df, reviews_df, left_on='id', right_on='candle_id', how='inner')
-
     merged_df['img_url'] = request.url_root + 'static/candle-' + merged_df['img_url']
+    unique_candles = merged_df[['id', 'name', 'category', 'description', 'overall_rating', 
+                              'overall_reviewcount', 'img_url', 'link']].drop_duplicates()
+    
+    results = []
 
-    filtered_df = merged_df[['name', 'category', 'description', 'overall_rating', 
-                           'overall_reviewcount', 'img_url', 'link', 'review_body', 'rating_value']]
-
-    return filtered_df.to_json(orient='records')
+    for _, candle in unique_candles.iterrows():
+        candle_reviews = merged_df[merged_df['id'] == candle['id']]
+        candle_data = {
+            'id': candle['id'],
+            'name': candle['name'],
+            'category': candle['category'],
+            'description': candle['description'],
+            'overall_rating': candle['overall_rating'],
+            'overall_reviewcount': candle['overall_reviewcount'],
+            'img_url': candle['img_url'],
+            'link': candle['link'],
+            'reviews': [] 
+        }
+        
+        for _, review in candle_reviews.iterrows():
+            candle_data['reviews'].append({
+                'review_body': review['review_body'],
+                'rating_value': review['rating_value']
+            })
+        
+        results.append(candle_data)
+    return json.dumps(results)
 
 # Routes
 @app.route("/")
