@@ -89,6 +89,7 @@ input {
     height: auto;
     /* width: 200px; */
     padding: 20px;
+    margin-top: 50px;
     /* margin-left: 50%;
     margin-right: 50%; */
     width: 80%;
@@ -99,7 +100,6 @@ input {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 20px;
-    margin-top: 50px;
     width: 100%;
 }
 
