@@ -2,6 +2,7 @@
 "1": {
         "name": "Lucky Shamrock™ - Returning Favorite",
         "category": "Fresh & Clean",
+        "company": "Yankee Candlee",                    
         "link": "https://www.yankeecandle.com/yankee-candle/candles/candle-styles/original-jar-candles/lucky-shamrock---returning-favorite/ORCL_1632868.html",
         "description": "This is a Fresh & Clean fragrance. A touch of the Emerald Isle…the fresh scent of lush, green hills kissed by a sparkle of sunshine. Top notes: Green Notes, Zesty Citrus. Middle notes: Eucalyptus, Hyacinth. Base notes: Cedar Wood, Violet Leaf. Top note is the initial impression of the fragrance, middle note is the main body of the scent and base is its final impression.",
         "overall_rating": "4.3",
