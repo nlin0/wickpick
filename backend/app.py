@@ -130,8 +130,44 @@ def home():
 
 @app.route("/candles")
 def candles_search():
-    text = request.args.get("query")
-    return cosine_sim_search(text)
+    text = request.args.get("query", "")
+    category = request.args.get("category", "").lower()
+
+    sim_df = similarity.retrieve_top_k_candles(text, 15)
+
+    merged_df = pd.merge(sim_df, reviews_df, left_on='id', right_on='candle_id', how='inner')
+    merged_df['img_url'] = request.url_root + 'static/candle-' + merged_df['img_url']
+
+    if category:
+        merged_df = merged_df[merged_df['category'].str.lower() == category]
+
+    unique_candles = merged_df[['id', 'name', 'category', 'description', 'overall_rating',
+                                'overall_reviewcount', 'img_url', 'link']].drop_duplicates()
+    
+    results = []
+    for _, candle in unique_candles.iterrows():
+        candle_reviews = merged_df[merged_df['id'] == candle['id']]
+        candle_data = {
+            'id': candle['id'],
+            'name': candle['name'],
+            'category': candle['category'],
+            'description': candle['description'],
+            'overall_rating': candle['overall_rating'],
+            'overall_reviewcount': candle['overall_reviewcount'],
+            'img_url': candle['img_url'],
+            'link': candle['link'],
+            'reviews': []
+        }
+
+        for _, review in candle_reviews.iterrows():
+            candle_data['reviews'].append({
+                'review_body': review['review_body'],
+                'rating_value': review['rating_value']
+            })
+
+        results.append(candle_data)
+
+    return json.dumps(results)
 
 if 'DB_NAME' not in os.environ:
     app.run(debug=True, host="0.0.0.0", port=5000)

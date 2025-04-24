@@ -42,7 +42,7 @@ class PandasSim:
     #     return [stemmer.lemmatize(word) for word in words]
 
     # SVD INITIALIZATION HELPERS
-    def perform_svd(tfidf_mat, k=40):
+    def perform_svd(self, tfidf_mat, k=40):
         docs_compressed, s, words_compressed_T = svds(tfidf_mat, k=k)
         words_compressed = words_compressed_T.transpose()
         return normalize(docs_compressed), words_compressed
