@@ -15,7 +15,10 @@
   <div class="full-body-container">
 
     <div class="filters">
-      <!-- TODO: make filter buttons -->
+      <div class="category-buttons" id="category-filters">
+        <!-- buttons added here via javascript -->
+      </div>
+      <button class="clear-filter-btn" onclick="clearFilters()">Clear Filter</button>
     </div>
 
 
@@ -74,17 +77,110 @@
       document.getElementById('filter-text-val').focus()
     }
 
+    document.addEventListener('DOMContentLoaded', function () {
+      initFilterUI();
+    });
+
+    let activeCategory = null;
+
+    const categories = [
+      "Fresh & Clean",
+      "Sweet & Spicy",
+      "Citrus",
+      "Floral",
+      "Woody",
+      "Fruity",
+      "Gourmand"
+    ];
+
+    const categorySynonyms = {
+      "sweet": "Sweet & Spicy",
+      "spicy": "Sweet & Spicy",
+      "fresh": "Fresh & Clean",
+      "clean": "Fresh & Clean"
+    };
+
+    function initFilterUI() {
+      const filtersDiv = document.querySelector('.filters');
+      if (!filtersDiv) return;
+
+      filtersDiv.innerHTML = `
+    <div class="buttons">
+
+      <div class="category-buttons" id="category-filters"></div>
+      <button class="clear-filter-btn" onclick="clearFilters()">Clear Filters</button>
+
+    </div>
+  `;
+
+      createCategoryButtons();
+    }
+
+    function createCategoryButtons() {
+      const categoryFilters = document.getElementById('category-filters');
+      if (!categoryFilters) return;
+
+      categories.forEach(category => {
+        const button = document.createElement('button');
+        button.innerText = category;
+        button.className = 'category-btn';
+        button.onclick = function () {
+          filterByCategory(category);
+        };
+        categoryFilters.appendChild(button);
+      });
+    }
+
+    function filterByCategory(category) {
+      if (activeCategory === category) {
+        activeCategory = null;
+        document.querySelectorAll('.category-btn').forEach(btn => {
+          btn.classList.remove('active');
+        });
+      } else {
+        activeCategory = category;
+        document.querySelectorAll('.category-btn').forEach(btn => {
+          if (btn.innerText === category) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+      }
+
+      filterText();
+    }
+
+    function clearFilters() {
+      activeCategory = null;
+      document.getElementById('filter-text-val').value = '';
+      document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.getElementById("answer-box").innerHTML = "";
+      document.getElementById("answer-box").classList.add("hidden");
+    }
+
+
     function filterText() {
       document.getElementById("answer-box").innerHTML = "";
       let query = document.getElementById("filter-text-val").value;
 
-      if (query === "") {
+      const params = new URLSearchParams();
+      if (query) {
+        params.append('query', query);
+      }
+      if (activeCategory) {
+        params.append('category', activeCategory);
+      }
+
+      if (query === "" && !activeCategory) {
         document.getElementById("answer-box").innerHTML = "";
         document.getElementById("answer-box").classList.add("hidden");
         return;
       }
 
-      fetch("/candles?" + new URLSearchParams({ query: query }).toString())
+      fetch("/candles?" + params.toString())
         .then((response) => response.json())
         .then((data) => {
           if (data.length === 0) {
@@ -129,9 +225,6 @@
     //     tempDiv.innerHTML = answerBoxTemplate(row.title, row.descr, row.imdb_rating)
     //     document.getElementById("answer-box").appendChild(tempDiv)
     // }));
-
-
-
 
   </script>
 </body>

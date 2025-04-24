@@ -45,14 +45,12 @@ class PandasSim:
         return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
 
     # SIMILARITY FUNCTIONS
-    # Get cosine similarity between two candles
     def cosine_sim_candles(self, id1, id2):
         rev1 = self.tfidf_reviews[id1]
         rev2 = self.tfidf_reviews[id2]
         cosine_sim = self.helper_cosine_sim(rev1, rev2)
         return cosine_sim
-
-    # Get cosine similarity between a query and a candle
+    
     def cosine_sim_query_candles(self, query, candle_id):
         transformed_query = self.transform_query(query)
         candle_rev = self.tfidf_reviews[candle_id]
@@ -62,7 +60,6 @@ class PandasSim:
         cosine_sim = self.helper_cosine_sim(transformed_query, candle_rev)
         return cosine_sim
     
-    # Retrieve top k candles based on cosine similarity
     def retrieve_top_k_candles(self, query, k):
         review_sims = {}
         for i in range(len(self.reviews)):
@@ -85,13 +82,8 @@ class PandasSim:
             desc_sim = desc_sims.get(candle_id, 0)
             combined_sims[candle_id] = 0.5 * rev_sim + 0.5 * desc_sim
         
-        # Sort candles by combined similarity score
         sorted_candle_ids = sorted(combined_sims.keys(), key=lambda cid: combined_sims[cid], reverse=True)
-    
-        #top_k_tuples = [(self.candles.iloc[cid], combined_sims[cid]) for cid in sorted_candle_ids[:k]]
-
-        #return top_k_tuples
-
+        
         # Return top k unique candles
         top_k_ids = sorted_candle_ids[:k]
         
