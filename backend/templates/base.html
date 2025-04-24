@@ -14,13 +14,6 @@
 <body>
   <div class="full-body-container">
 
-    <div class="filters">
-      <div class="category-buttons" id="category-filters">
-        <!-- buttons added here via javascript -->
-      </div>
-      <button class="clear-filter-btn" onclick="clearFilters()">Clear Filter</button>
-    </div>
-
 
     <div class="top-text">
       <div class="logo-header">
@@ -30,6 +23,14 @@
         <img class="search-icon" src="{{ url_for('static', filename='images/mag.png') }}" />
         <input placeholder="search candles" id="filter-text-val" onkeydown="checkEnter(event)">
       </div>
+    </div>
+
+
+    <div class="filters">
+      <div class="category-buttons" id="category-filters">
+        <!-- buttons added here via javascript -->
+      </div>
+      <button class="clear-filter-btn" onclick="clearFilters()">Clear Filter</button>
     </div>
 
     <div class="candle-display">
@@ -105,12 +106,8 @@
       if (!filtersDiv) return;
 
       filtersDiv.innerHTML = `
-    <div class="buttons">
-
       <div class="category-buttons" id="category-filters"></div>
       <button class="clear-filter-btn" onclick="clearFilters()">Clear Filters</button>
-
-    </div>
   `;
 
       createCategoryButtons();

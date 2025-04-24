@@ -89,7 +89,6 @@ input {
     height: auto;
     /* width: 200px; */
     padding: 20px;
-    margin-top: 50px;
     /* margin-left: 50%;
     margin-right: 50%; */
     width: 80%;
@@ -277,16 +276,21 @@ input {
 }
 
 .filters {
-    padding: 15px;
-    background-color: #fffdfd;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
+
+    padding: 25px;
+    /* background-color: #fffdfd; */
     border-radius: 8px;
     margin: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 0px;
+    /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); */
 }
 
 .filters h3 {
     margin-top: 0;
-    margin-bottom: 12px;
     font-family: 'Kanit', sans-serif;
     font-size: 18px;
     color: #333;
@@ -299,39 +303,52 @@ input {
     margin-bottom: 15px;
 }
 
-button {
+/* button {
     text-transform: lowercase;
-}
+} */
 
 .category-btn {
-    padding: 6px 14px;
+    padding: 8px 14px;
     border: none;
     border-radius: 20px;
-    background-color: #f3c4c4;
+    /* background-color: #f3c4c4; */
+
+    /* background-color: rgb(232, 124, 124); */
+    background-color: rgb(199, 144, 144);
+    border-color: rgb(255, 213, 213);
+    color:#FFD2D2;
+
+
     cursor: pointer;
     font-family: 'Montserrat', sans-serif;
     font-size: 14px;
     transition: all 0.2s ease;
-    color: rgba(180, 48, 48, 0.784);
+    /* border: 1px solid rgba(180, 48, 48, 0.784); */
+
 }
 
 .category-btn:hover {
     background-color: rgb(232, 124, 124);
-    border-color: rgb(255, 213, 213);
+    border-color: rgb(255, 222, 222);
     color: white;
+    /* background-color: rgb(199, 144, 144);
+    border-color: rgb(255, 213, 213);
+    color: white; */
 }
 
 .category-btn.active {
     background-color: rgb(232, 124, 124);
     color: white;
-    border-color: rgb(255, 222, 222);
+    border-color: rgb(236, 59, 59);
 }
 
 .clear-filter-btn {
-    padding: 6px 14px;
+    width: 95px;
+    height: 33px;
+
     border: none;
     border-radius: 20px;
-    background-color: #e0e0e0;
+    /* background-color: #e0e0e0; */
     cursor: pointer;
     font-family: 'Montserrat', sans-serif;
     font-size: 14px;
