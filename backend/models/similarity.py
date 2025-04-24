@@ -87,15 +87,84 @@ class PandasSim:
         
         # Sort candles by combined similarity score
         sorted_candle_ids = sorted(combined_sims.keys(), key=lambda cid: combined_sims[cid], reverse=True)
-        
+    
+        #top_k_tuples = [(self.candles.iloc[cid], combined_sims[cid]) for cid in sorted_candle_ids[:k]]
+
+        #return top_k_tuples
+
         # Return top k unique candles
         top_k_ids = sorted_candle_ids[:k]
+        
         return self.candles.iloc[top_k_ids]
+
+    def retrieve_bottom_k_candles(self,query,k):
+        review_sims = {}
+        for i in range(len(self.reviews)):
+            candle_id = self.review_idx_to_candle_idx[i]
+            sim = self.cosine_sim_query_candles(query, i)
+            if candle_id in review_sims:
+                review_sims[candle_id] = max(review_sims[candle_id], sim)
+            else:
+                review_sims[candle_id] = sim
+        
+        desc_sims = {}
+        for i in range(len(self.candles)):
+            candle_id = i  
+            desc_sim = self.helper_cosine_sim(self.tfidf_description[i], self.transform_query(query))
+            desc_sims[candle_id] = desc_sim
+        
+        combined_sims = {}
+        for candle_id in set(review_sims.keys()) | set(desc_sims.keys()):
+            rev_sim = review_sims.get(candle_id, 0)
+            desc_sim = desc_sims.get(candle_id, 0)
+            combined_sims[candle_id] = 0.5 * rev_sim + 0.5 * desc_sim
+        
+        sorted_candle_ids = sorted(combined_sims.keys(), key=lambda cid: combined_sims[cid], reverse=False)
+
+        top_k_ids = sorted_candle_ids[:k]
+        
+        return self.candles.iloc[top_k_ids]
+
     
-    def rocchio(self, query, relevant, irrelevant, alpha = 1, beta = 0.75, gamma = 0.15):
+    def rocchio(self, query, alpha = 1, beta = 0.75, gamma = 0.15):
         # IMPLEMENT ROCCHIO HERE
         # going to use for query suggestions ("did you mean: ...?") like google
-        return
+        query_vec = self.transform_query(query)
+    
+        relevant_candles = self.retrieve_top_k_candles(query, 10)
+        relevant_ids = relevant_candles.index.tolist()
+        
+        irrelevant_candles = self.retrieve_bottom_k_candles(query, 10)
+        irrelevant_ids = irrelevant_candles.index.tolist()
+        
+        #relevant centroid
+        if relevant_ids:
+            relevant_vecs = []
+            for candle_id in relevant_ids:
+                relevant_vecs.append(self.tfidf_description[candle_id])
+            
+            relevant_centroid = np.mean(relevant_vecs, axis=0) if relevant_vecs else np.zeros_like(query_vec)
+        else:
+            relevant_centroid = np.zeros_like(query_vec)
+        
+        # irrelevant centroid
+        if irrelevant_ids:
+            irrelevant_vecs = []
+            for candle_id in irrelevant_ids:
+                irrelevant_vecs.append(self.tfidf_description[candle_id])
+            
+            irrelevant_centroid = np.mean(irrelevant_vecs, axis=0) if irrelevant_vecs else np.zeros_like(query_vec)
+        else:
+            irrelevant_centroid = np.zeros_like(query_vec)
+        
+        modified_query_vec = alpha * query_vec + beta * relevant_centroid - gamma * irrelevant_centroid
+        return modified_query_vec
+    
+    def get_query_suggestions(self, modified_query_vec, num_terms=5):
+        feature_names = np.array(self.tfidf_vectorizer.get_feature_names_out())
+        top_indices = modified_query_vec.argsort()[-num_terms:][::-1]
+        top_terms = feature_names[top_indices]
+        return " ".join(top_terms)
     
     def svd(self):
         # IMPLEMENT SVD HERE

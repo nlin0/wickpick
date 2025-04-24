@@ -87,6 +87,12 @@ similarity = PandasSim(candles_df, reviews_df)
 
 def cosine_sim_search(query):
     sim_df = similarity.retrieve_top_k_candles(query, 15)
+    #print(" 111111111111 a sunny day skipping in the grass")
+    #rocchio_output = similarity.rocchio("a sunny day skipping in the grass")
+    #print(" 222222222222 hello my friend")
+    #actual_suggestions = similarity.get_query_suggestions(rocchio_output)
+    #print(actual_suggestions)
+    #print(sim_df)
     merged_df = pd.merge(sim_df, reviews_df, left_on='id', right_on='candle_id', how='inner')
     merged_df['img_url'] = request.url_root + 'static/candle-' + merged_df['img_url']
     unique_candles = merged_df[['id', 'name', 'category', 'description', 'overall_rating', 
