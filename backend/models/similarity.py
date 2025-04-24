@@ -31,18 +31,16 @@ class PandasSim:
         self.tfidf_description = self.tfidf_vectorizer.transform([r if r is not None else "" for r in self.candles['description']]).toarray()
 
     # HELPER FUNCTIONS
-    # def custom_tokenizer(self, corpus):
-    #     # stemmer = SnowballStemmer('english')
-    #     stemmer = WordNetLemmatizer()
-    #     words = re.sub(r"[^A-Za-z0-9\-]", " ", corpus).lower().split()
-    #     return [stemmer.lemmatize(word) for word in words]
-    
     # Takes in string query and transforms it
     def transform_query(self, query):
         return self.tfidf_vectorizer.transform([query]).toarray()[0]
     
     def helper_cosine_sim(self, vec1, vec2):
         return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
+
+    def helper_jaccard_sim(self, vec1, vec2):
+        # jaccard on unique terms
+        return np.intersect1d(vec1, vec2) / np.union1d(vec1, vec2)
 
     # SIMILARITY FUNCTIONS
     def cosine_sim_candles(self, id1, id2):
@@ -61,6 +59,13 @@ class PandasSim:
         return cosine_sim
     
     def retrieve_top_k_candles(self, query, k):
+        '''
+        Returns the top k candles based on a custom similarity score:
+        Similarity between a query and a candle is the weighted sum of 
+        the cosine similarity between the query and the reviews, the
+        cos sim between the query and the description, and the jaccard
+        sim between the query and the candle name.
+        '''
         review_sims = {}
         for i in range(len(self.reviews)):
             candle_id = self.review_idx_to_candle_idx[i]
@@ -75,12 +80,20 @@ class PandasSim:
             candle_id = i  
             desc_sim = self.helper_cosine_sim(self.tfidf_description[i], self.transform_query(query))
             desc_sims[candle_id] = desc_sim
+
+        name_sims = {}
+        for i in range(len(self.candles)):
+            cand_name = self.candles[i]["name"]
+            name_sim = self.helper_jaccard_sim(cand_name, query)
+            name_sim[i] = name_sim
         
         combined_sims = {}
-        for candle_id in set(review_sims.keys()) | set(desc_sims.keys()):
+        for candle_id in set(review_sims.keys()) | set(desc_sims.keys()) | set(name_sims.keys()):
             rev_sim = review_sims.get(candle_id, 0)
             desc_sim = desc_sims.get(candle_id, 0)
-            combined_sims[candle_id] = 0.5 * rev_sim + 0.5 * desc_sim
+            name_sim = name_sims.get(candle_id, 0)
+            w1, w2, w3 = 0.2, 0.4, 0.4
+            combined_sims[candle_id] = (w1 * name_sim) + (w2 * rev_sim) + (w3 * desc_sim)
         
         sorted_candle_ids = sorted(combined_sims.keys(), key=lambda cid: combined_sims[cid], reverse=True)
         
@@ -161,60 +174,3 @@ class PandasSim:
     def svd(self):
         # IMPLEMENT SVD HERE
         return
-
-# class Similarity:
-#     def __init__(self, candles):
-#         print("init")
-#         self.candles = candles
-#         self.reviews = [candle.ind_review for candle in candles]
-#         self.tfidf_vectorizer = TfidfVectorizer(stop_words = 'english')  # optimize parameters later
-#         self.tfidf_reviews = self.tfidf_vectorizer.fit_transform([r for r in self.reviews]).toarray()
-
-#         # print(self.tfidf_vectorizer.get_feature_names_out())
-#         # print(self.tfidf_reviews)
-
-#     # HELPER FUNCTIONS
-#     # Takes in string query and transforms it
-#     def transform_query(self, query):
-#         return self.tfidf_vectorizer.transform([query]).toarray()[0]
-    
-#     def helper_cosine_sim(self, vec1, vec2):
-#         return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
-
-#     # SIMILARITY FUNCTIONS
-#     # Get cosine similarity between two candles
-#     def cosine_sim_candles(self, id1, id2):
-#         # cosine_similarities = sklearn.metrics.pairwise.cosine_similarity(self.tfidf_reviews, self.tfidf_reviews[candle_id])
-#         rev1 = self.tfidf_reviews[id1]
-#         rev2 = self.tfidf_reviews[id2]
-#         cosine_sim = self.helper_cosine_sim(rev1, rev2)
-#         return cosine_sim
-
-#     # Get cosine similarity between a query and a candle
-#     def cosine_sim_query_candles(self, query, candle_id):
-#         # print()
-#         transformed_query = self.transform_query(query)
-#         candle_rev = self.tfidf_reviews[candle_id]
-#         # print(transformed_query)
-#         # print(candle_rev)
-#         norm_query = np.linalg.norm(transformed_query)
-#         if norm_query == 0:
-#             return 0
-#         cosine_sim = self.helper_cosine_sim(transformed_query, candle_rev)
-#         return cosine_sim
-    
-#     # Retrieve top k candles based on cosine similarity
-#     def retrieve_top_k_candles(self, query, k):
-#         # Get cosine similarity between query and all candles
-#         # cosine_sims = [self.cosine_sim_query_candles(query, i) for i in range(len(self.candles))]
-#         # sorted_candles = sorted(range(len(cosine_sims)), key = lambda i: cosine_sims[i], reverse = True)
-#         return
-    
-#     def rocchio(self, query, relevant, irrelevant, alpha = 1, beta = 0.75, gamma = 0.15):
-#         # IMPLEMENT ROCCHIO HERE
-#         # going to use for query suggestions ("did you mean: ...?") like google
-#         return
-    
-#     def svd(self):
-#         # IMPLEMENT SVD HERE
-#         return
