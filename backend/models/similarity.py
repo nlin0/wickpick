@@ -23,9 +23,8 @@ class PandasSim:
         ]
         stop_words_list = list(text.ENGLISH_STOP_WORDS) + my_stop_words
         self.tfidf_vectorizer = TfidfVectorizer(stop_words=stop_words_list, min_df=1, max_df=0.95)
-        # self.tfidf_vectorizer = TfidfVectorizer(stop_words='english', min_df=1, max_df=0.95)
 
-        # First fit on all text to establish the vocabulary
+        # Fit on all text to establish the vocabulary
         names = [n if n is not None else "" for n in self.candles['name']]
         revs = [r if r is not None else "" for r in self.reviews]
         descs = [d if d is not None else "" for d in self.candles['description']]
