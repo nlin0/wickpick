@@ -211,6 +211,13 @@ input {
     margin-top: -10%;
 }
 
+.svd-labels-container {
+    background-color: white;
+    padding: 18px;
+    margin: 0px;
+    margin-bottom: 5px;
+}
+
 
 .candle-desc {
     font-family: 'Montserrat', sans-serif;
@@ -316,7 +323,7 @@ input {
     /* background-color: rgb(232, 124, 124); */
     background-color: rgb(199, 144, 144);
     border-color: rgb(255, 213, 213);
-    color:#FFD2D2;
+    color: #FFD2D2;
 
 
     cursor: pointer;
