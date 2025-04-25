@@ -67,11 +67,13 @@ class PandasSim:
     
     # GENERIC SIMILARITY FUNCTION
     def helper_cosine_sim(self, vec1, vec2):
-        norm1 = np.linalg.norm(vec1)
-        norm2 = np.linalg.norm(vec2)
-        if norm1 == 0 or norm2 == 0:
-            return 0.0
-        return np.dot(vec1, vec2) / (norm1 * norm2)
+        sim = np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
+        if isinstance(sim, (np.ndarray, list)):
+            return np.nan_to_num(sim, nan=0.0, posinf=0.0, neginf=0.0)
+        return 0 if np.isnan(sim) or np.isinf(sim) else sim
+    
+    # def helper_cosine_sim(self, vec1, vec2):
+    #     return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
 
     def helper_jaccard_sim(self, vec1, vec2, edit_threshold=2):
         # jaccard on unique terms
@@ -120,6 +122,56 @@ class PandasSim:
             return 0
         cosine_sim = self.helper_cosine_sim(transformed_query, candle_rev)
         return cosine_sim
+    
+    # SVD STUFF
+    def retrieve_sorted_candles_svd(self, query, w1=0.2, w2=0.4, w3=0.4):
+        '''
+        Returns candles sorted based on a custom similarity score:
+        Similarity between a query and a candle is the weighted sum of 
+        the cosine similarity between the query and the reviews, the
+        cos sim between the query and the description, and the jaccard
+        sim between the query and the candle name.
+
+        If the query does not yield good distribution (i.e. highest and 
+        lowest are not diff enough), then perform rocchio and redo?
+        '''
+        print("count of all candles:", len(self.candles))
+
+        # Review similarity
+        modified_query = self.transform_query_svd(query, self.reviews_words_compressed)
+        review_sims_per_review = self.helper_cosine_sim(self.reviews_compressed_normed, modified_query)
+        review_df = pd.DataFrame({
+            'candle_id': [self.review_idx_to_candle_idx[i] for i in range(len(review_sims_per_review))],
+            'similarity': review_sims_per_review
+        })
+        review_sims = review_df.groupby('candle_id')['similarity'].mean().to_dict()
+        print("rev sims", review_sims, len(review_sims))
+        print()
+
+        # Description similarity 
+        modified_query = self.transform_query_svd(query, self.descriptions_words_compressed)
+        desc_sims_list = self.helper_cosine_sim(self.descriptions_compressed_normed, modified_query)
+        desc_sims = {i: sim for i, sim in enumerate(desc_sims_list)}
+        print("desc sims", desc_sims, len(desc_sims))
+
+        # Name similarity
+        name_sims = {}
+        query_tokenized = self.generic_tokenizer(query)
+        query_tokenized = self.generic_tokenizer(query)
+        for i in range(len(self.candles)):
+            cand_name_tokenized = self.generic_tokenizer(self.candles.loc[i, "name"])
+            name_sims[i] = self.helper_jaccard_sim(query_tokenized, cand_name_tokenized)
+
+        combined_sims = {}
+        for candle_id in set(review_sims.keys()) | set(desc_sims.keys()) | set(name_sims.keys()):
+            rev_sim = review_sims.get(candle_id, 0)
+            desc_sim = desc_sims.get(candle_id, 0)
+            name_sim = name_sims.get(candle_id, 0)
+            combined_sims[candle_id] = (w1 * name_sim) + (w2 * rev_sim) + (w3 * desc_sim)
+        
+        sorted_candle_ids = sorted(combined_sims.keys(), key=lambda cid: combined_sims[cid], reverse=True)
+        
+        return self.candles.iloc[sorted_candle_ids]
     
     def retrieve_top_k_candles_svd(self, query, k, w1=0.2, w2=0.4, w3=0.4):
         '''
@@ -173,7 +225,7 @@ class PandasSim:
         
         return self.candles.iloc[top_k_ids]
 
-    
+    # NO SVD BAD BAD
     def retrieve_top_k_candles(self, query, k, w1=0.4, w2=0.2, w3=0.2):
         '''
         Returns the top k candles based on a custom similarity score:
