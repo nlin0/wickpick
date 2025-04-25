@@ -6,9 +6,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import normalize
 from scipy.sparse.linalg import svds
-# import nltk
-# from nltk.stem.wordnet import WordNetLemmatizer
-# from nltk.stem.snowball import SnowballStemmer
+import nltk
+from nltk.stem.wordnet import WordNetLemmatizer
 
 # from models.candle import Candle
 
@@ -20,8 +19,8 @@ class PandasSim:
         self.review_idx_to_candle_idx = {i: reviews_df.iloc[i]['candle_id'] for i in range(len(reviews_df))}
 
         # TODO: Fix the nltk thingy so that the lemmatizer works
-        # self.tfidf_vectorizer = TfidfVectorizer(tokenizer=self.custom_tokenizer, stop_words='english')
-        self.tfidf_vectorizer = TfidfVectorizer(stop_words='english', min_df=1, max_df=1.0)
+        self.tfidf_vectorizer = TfidfVectorizer(tokenizer=self.custom_tokenizer, stop_words='english')
+        # self.tfidf_vectorizer = TfidfVectorizer(stop_words='english', min_df=1, max_df=1.0)
 
         # First fit on all text to establish the vocabulary
         all_text = [r if r is not None else "" for r in self.reviews] + [d if d is not None else "" for d in self.candles['description']]
@@ -36,10 +35,14 @@ class PandasSim:
         self.descriptions_compressed_normed, self.descriptions_words_compressed = self.perform_svd(self.tfidf_description, k=40)
 
     # HELPER FUNCTIONS
-    # def custom_tokenizer(self, corpus):
-    #     stemmer = WordNetLemmatizer()
-    #     words = re.sub(r"[^A-Za-z0-9\-]", " ", corpus).lower().split()
-    #     return [stemmer.lemmatize(word) for word in words]
+    def custom_tokenizer(self, corpus):
+        stemmer = WordNetLemmatizer()
+        words = re.sub(r"[^A-Za-z0-9\-]", " ", corpus).lower().split()
+        return [stemmer.lemmatize(word) for word in words]
+    
+    def generic_tokenizer(self, corpus):
+        # print(re.sub(r"[^A-Za-z0-9\-]", " ", corpus).lower().split())
+        return re.sub(r"[^A-Za-z0-9\-]", " ", corpus).lower().split()
 
     # SVD INITIALIZATION HELPERS
     def perform_svd(self, tfidf_mat, k=40):
@@ -57,10 +60,10 @@ class PandasSim:
 
     def helper_jaccard_sim(self, vec1, vec2):
         # jaccard on unique terms
-        union = np.union1d(vec1, vec2)
+        union = len(np.union1d(vec1, vec2))
         if union == 0:
             return 0
-        return np.intersect1d(vec1, vec2) / union
+        return len(np.intersect1d(vec1, vec2)) / union
 
     # QUERY TRANSFORMATION
     def transform_query(self, query):
@@ -103,7 +106,7 @@ class PandasSim:
         modified_query = self.transform_query_svd(query, self.reviews_words_compressed)
         review_sims = self.helper_cosine_sim(self.reviews_compressed_normed, modified_query)
         top_k_revs_by_idx = np.argsort(-review_sims)[:k+1]
-        
+
         modified_query = self.transform_query_svd(query, self.descriptions_words_compressed)
         descs_sims = self.helper_cosine_sim(self.descriptions_compressed_normed, modified_query)
         top_k_descs_by_idx = np.argsort(-descs_sims)[:k+1]
@@ -143,6 +146,7 @@ class PandasSim:
         review_sims = {}
         for i in range(len(self.reviews)):
             candle_id = self.review_idx_to_candle_idx[i]
+            print(self.candles[candle_id])
             sim = self.cosine_sim_query_candles(query, i)
             if candle_id in review_sims:
                 review_sims[candle_id] = max(review_sims[candle_id], sim)
@@ -151,14 +155,16 @@ class PandasSim:
         
         desc_sims = {}
         for i in range(len(self.candles)):
+            print(self.candles[i])
             candle_id = i  
             desc_sim = self.helper_cosine_sim(self.tfidf_description[i], self.transform_query(query))
             desc_sims[candle_id] = desc_sim
 
         name_sims = {}
-        query_tokenized = self.custom_tokenizer(query)
+        query_tokenized = self.generic_tokenizer(query)
         for i in range(len(self.candles)):
-            cand_name_tokenized = self.custom_tokenizer(self.candles[i]["name"])
+            # print(self.candles.loc[candle_id, 'name'], i)
+            cand_name_tokenized = self.generic_tokenizer(self.candles.loc[candle_id, 'name'])
             name_sims[i] = self.helper_jaccard_sim(query_tokenized, cand_name_tokenized)
         
         combined_sims = {}
