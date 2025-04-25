@@ -43,8 +43,12 @@
 
 
   <script>
+
+
     document.addEventListener('DOMContentLoaded', () => {
-      const placeholders = [
+      const input = document.getElementById("filter-text-val");
+
+      const messages = [
         "what candle vibe?",
         "candle mood?",
         "pick a candle type",
@@ -55,15 +59,45 @@
         "we can help you find candles!",
         "type here!"
       ];
-      const input = document.getElementById("filter-text-val");
 
-      function rotatePlaceholder() {
-        const randomIndex = Math.floor(Math.random() * placeholders.length);
-        input.placeholder = placeholders[randomIndex];
+      let msgIndex = 0;
+      let charIndex = 0;
+      let currentText = '';
+      let typingInterval;
+
+      function typePlaceholder() {
+        const message = messages[msgIndex];
+        if (charIndex < message.length) {
+          currentText += message.charAt(charIndex);
+          input.placeholder = currentText;
+          charIndex++;
+        } else {
+          clearInterval(typingInterval);
+          setTimeout(() => {
+            erasePlaceholder();
+          }, 1500); // Pause after full message
+        }
       }
 
-      rotatePlaceholder();
-      setInterval(rotatePlaceholder, 2500);
+      function erasePlaceholder() {
+        typingInterval = setInterval(() => {
+          if (charIndex > 0) {
+            currentText = currentText.slice(0, -1);
+            input.placeholder = currentText;
+            charIndex--;
+          } else {
+            clearInterval(typingInterval);
+            msgIndex = (msgIndex + 1) % messages.length;
+            setTimeout(() => {
+              currentText = '';
+              typingInterval = setInterval(typePlaceholder, 70);
+            }, 300);
+          }
+        }, 40);
+      }
+
+      // Start the typing effect
+      typingInterval = setInterval(typePlaceholder, 70);
     });
 
     function answerBoxTemplate(name, url, desc, rating, numReviews, img_url, sim_score, id) {
