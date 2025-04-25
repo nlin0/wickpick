@@ -150,7 +150,7 @@ def candles_search():
         merged_df = merged_df[merged_df['category'].str.lower() == category]
 
     unique_candles = merged_df[['id', 'name', 'category', 'description', 'overall_rating',
-                                'overall_reviewcount', 'img_url', 'link']].drop_duplicates()
+                                'overall_reviewcount', 'img_url', 'link', 'sim_score']].drop_duplicates()
     
     results = []
     for _, candle in unique_candles.iterrows():
@@ -165,6 +165,7 @@ def candles_search():
             'img_url': candle['img_url'],
             'link': candle['link'],
             'reviews': [],
+            'sim_score': candle['sim_score'],
             'svd_labels': similarity.svd_dim_labels(int(candle['id']), top_dims=10, top_n_words=1)
         }
 
