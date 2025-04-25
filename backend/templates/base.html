@@ -57,7 +57,10 @@
         "candle style?",
         "candle preference?",
         "we can help you find candles!",
-        "type here!"
+        "type here!",
+        "what the sigma",
+        "take a whiff",
+        "need a candle for your room?"
       ];
 
       let msgIndex = 0;
@@ -75,7 +78,7 @@
           clearInterval(typingInterval);
           setTimeout(() => {
             erasePlaceholder();
-          }, 1500); // Pause after full message
+          }, 2000); // Pause after full message
         }
       }
 
@@ -108,7 +111,7 @@
               <h3 class='candle-name'><a href="${url}" target="_blank" class="candle-link">${name}</a></h3>
               <div class="candle-img-container">
                 <img class="candle-photo" src="${img_url}" alt="${name}">
-                <p class="sim-score">Similarity: ${sim_score.toFixed(3)}</p>
+                <p class="sim-score">similarity score: ${sim_score.toFixed(3)}</p>
               </div>
             </div>
             
@@ -305,7 +308,7 @@
                 </div>
                 <div class="popup-content">
                   <div class="sim-score">
-                  similarity: ${(row.sim_score * 100).toFixed(1)}%
+                  ${(row.sim_score * 100).toFixed(2)}% similarity to query
                 </div>
 
                   <div class="top-feats">
