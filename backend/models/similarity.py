@@ -26,18 +26,53 @@ class PandasSim:
         # Then transform each separately
         self.tfidf_reviews = self.tfidf_vectorizer.transform([r if r is not None else "" for r in self.reviews]).toarray()
         self.tfidf_description = self.tfidf_vectorizer.transform([r if r is not None else "" for r in self.candles['description']]).toarray()
+        self.tfidf_all = self.getTfidfAll()
+        # print("Description shape:", np.shape(self.tfidf_description))
+        # print("All shape:", np.shape(self.tfidf_all))
 
         # Apply SVD to both
-        self.reviews_compressed_normed, self.reviews_words_compressed = self.perform_svd(self.tfidf_reviews, k=40)
-        self.descriptions_compressed_normed, self.descriptions_words_compressed = self.perform_svd(self.tfidf_description, k=40)
+        self.reviews_compressed_normed, self.reviews_words_compressed = self.perform_svd(self.tfidf_reviews)
+        self.descriptions_compressed_normed, self.descriptions_words_compressed = self.perform_svd(self.tfidf_description)
+        self.all_compressed_normed, self.all_words_compressed = self.perform_svd(self.tfidf_all)
+        # print("All compressed normed shape:", np.shape(self.all_compressed_normed))
+        # print("All words compressed shape:", np.shape(self.all_words_compressed))
+
+        # Extract vocab
+        word_to_index = self.tfidf_vectorizer.vocabulary_
+        self.index_to_word = {i:t for t,i in word_to_index.items()}
+        
+        # Get top 5 words for each candle
+        self.top_words_by_id = {i: self.get_top_n_candle_dimensions(i) for i in range(len(self.candles))}
 
     # HELPER FUNCTIONS
     # def custom_tokenizer(self, corpus):
     #     stemmer = WordNetLemmatizer()
     #     words = re.sub(r"[^A-Za-z0-9\-]", " ", corpus).lower().split()
     #     return [stemmer.lemmatize(word) for word in words]
+
+    def getTfidfAll(self):
+        reviews_by_candle = {}
+        for review_idx, candle_id in self.review_idx_to_candle_idx.items():
+            candle_idx = candle_id - 1
+            review_text = self.reviews[review_idx] if review_idx < len(self.reviews) and self.reviews[review_idx] is not None else ""
+            
+            if candle_idx not in reviews_by_candle:
+                reviews_by_candle[candle_idx] = ""
+            reviews_by_candle[candle_idx] += (review_text + " ")
+
+        # Create combined corpus for each candle (name + description + all reviews)
+        combined_candle_text = []
+        for i in range(len(self.candles)):
+            description = self.candles.loc[i, 'description'] if self.candles.loc[i, 'description'] is not None else ""
+            name = self.candles.loc[i, 'name'] if self.candles.loc[i, 'name'] is not None else ""
+            all_reviews_text = reviews_by_candle.get(i, "")
+
+            combined_text = f"{name} {description} {all_reviews_text}"
+            combined_candle_text.append(combined_text)
+
+        return self.tfidf_vectorizer.transform(combined_candle_text).toarray()
     
-     # edit distance algo
+    # edit distance algo
     def edit_distance(self, s1, s2):
         dp = np.zeros((len(s1)+1, len(s2)+1), dtype=int)
         for i in range(len(s1)+1):
@@ -251,6 +286,22 @@ class PandasSim:
             })
 
         return results
+    
+    def get_top_n_candle_dimensions(self, candle_id, n=5):
+        """
+        Returns the top N words associated with a specific candle based on SVD dimensions.
+        
+        Args:
+            candle_id: The ID of the candle to analyze
+            top_n: Number of top words to return (default: 5)
+        
+        Returns:
+            List of top words associated with this candle
+        """
+        candle_svd_vec = self.all_compressed_normed[candle_id]
+        sims = self.all_words_compressed.dot(candle_svd_vec)
+        asort = np.argsort(-sims)[:n]
+        return [(self.index_to_word[i], sims[i]) for i in asort]
 
     # NO SVD BAD BAD
     def retrieve_top_k_candles(self, query, k, w1=0.4, w2=0.2, w3=0.2):

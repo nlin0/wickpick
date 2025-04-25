@@ -139,6 +139,10 @@ def candles_search():
     # sim_df = similarity.retrieve_top_k_candles(text, 20)
     sim_df = similarity.retrieve_sorted_candles_svd(text)
 
+    # for i in range(0,5):
+    #     top_words = similarity.get_top_n_candle_dimensions(i)
+    #     print(top_words)
+
     merged_df = pd.merge(sim_df, reviews_df, left_on='id', right_on='candle_id', how='inner')
     merged_df['img_url'] = request.url_root + 'static/candle-' + merged_df['img_url']
 
