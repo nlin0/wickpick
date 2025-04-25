@@ -6,21 +6,25 @@ from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import normalize
 from scipy.sparse.linalg import svds
-import nltk
-from nltk.stem.wordnet import WordNetLemmatizer
+# import nltk
+# from nltk.stem.wordnet import WordNetLemmatizer
 
 # from models.candle import Candle
 
 class PandasSim:
     def __init__(self, candles_df, reviews_df):
-        # nltk.download('wordnet')
+        # print(os.getcwd())
+        # nltk.data.find(f"{os.getcwd()}/nltk_data/corpora/wordnet")
+        # nltk.data.path.append("./nltk_data")
+        # nltk.download('wordnet', download_dir=f"{os.getcwd()}/nltk_data/corpora/wordnet")
+        # nltk.download('wordnet', download_dir="./nltk_data")
         self.candles = candles_df
         self.reviews = reviews_df['review_body'].tolist()
         self.review_idx_to_candle_idx = {i: reviews_df.iloc[i]['candle_id'] for i in range(len(reviews_df))}
 
         # TODO: Fix the nltk thingy so that the lemmatizer works
-        self.tfidf_vectorizer = TfidfVectorizer(tokenizer=self.custom_tokenizer, stop_words='english')
-        # self.tfidf_vectorizer = TfidfVectorizer(stop_words='english', min_df=1, max_df=1.0)
+        # self.tfidf_vectorizer = TfidfVectorizer(tokenizer=self.custom_tokenizer, stop_words='english')
+        self.tfidf_vectorizer = TfidfVectorizer(stop_words='english')
 
         # First fit on all text to establish the vocabulary
         all_text = [r if r is not None else "" for r in self.reviews] + [d if d is not None else "" for d in self.candles['description']]
@@ -35,10 +39,10 @@ class PandasSim:
         self.descriptions_compressed_normed, self.descriptions_words_compressed = self.perform_svd(self.tfidf_description, k=40)
 
     # HELPER FUNCTIONS
-    def custom_tokenizer(self, corpus):
-        stemmer = WordNetLemmatizer()
-        words = re.sub(r"[^A-Za-z0-9\-]", " ", corpus).lower().split()
-        return [stemmer.lemmatize(word) for word in words]
+    # def custom_tokenizer(self, corpus):
+    #     stemmer = WordNetLemmatizer()
+    #     words = re.sub(r"[^A-Za-z0-9\-]", " ", corpus).lower().split()
+    #     return [stemmer.lemmatize(word) for word in words]
     
     def generic_tokenizer(self, corpus):
         # print(re.sub(r"[^A-Za-z0-9\-]", " ", corpus).lower().split())
@@ -112,9 +116,9 @@ class PandasSim:
         top_k_descs_by_idx = np.argsort(-descs_sims)[:k+1]
 
         name_sims = {}
-        query_tokenized = self.custom_tokenizer(query)
+        query_tokenized = self.generic_tokenizer(query)
         for i in range(len(self.candles)):
-            cand_name_tokenized = self.custom_tokenizer(self.candles[i]["name"])
+            cand_name_tokenized = self.generic_tokenizer(self.candles[i]["name"])
             name_sims[i] = self.helper_jaccard_sim(query_tokenized, cand_name_tokenized)
         
         #TODO: Implement combining logic
@@ -146,7 +150,7 @@ class PandasSim:
         review_sims = {}
         for i in range(len(self.reviews)):
             candle_id = self.review_idx_to_candle_idx[i]
-            print(self.candles[candle_id])
+            # print(self.candles[candle_id])
             sim = self.cosine_sim_query_candles(query, i)
             if candle_id in review_sims:
                 review_sims[candle_id] = max(review_sims[candle_id], sim)
@@ -155,7 +159,7 @@ class PandasSim:
         
         desc_sims = {}
         for i in range(len(self.candles)):
-            print(self.candles[i])
+            # print(self.candles[i])
             candle_id = i  
             desc_sim = self.helper_cosine_sim(self.tfidf_description[i], self.transform_query(query))
             desc_sims[candle_id] = desc_sim

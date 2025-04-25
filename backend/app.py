@@ -6,6 +6,7 @@ import pandas as pd
 from flask import url_for
 from models.similarity import PandasSim
 from models.ml import MLModel
+import nltk
 
 # ROOT_PATH for linking with all your files.
 # Feel free to use a config.py or settings.py with a global export variable
@@ -70,20 +71,20 @@ CORS(app)
 similarity = PandasSim(candles_df, reviews_df)
 
 # helper functions
-# def json_search(query):
-#     matches = []
-#     matches = candles_df[candles_df['name'].str.lower().str.contains(query.lower()) | 
-#                          candles_df['description'].str.lower().str.contains(query.lower())]
+def json_search(query):
+    matches = []
+    matches = candles_df[candles_df['name'].str.lower().str.contains(query.lower()) | 
+                         candles_df['description'].str.lower().str.contains(query.lower())]
 
-#     merged_df = pd.merge(matches, reviews_df, left_on='id', right_on='candle_id', how='inner')
-#     merged_df['img_url'] = request.url_root + 'static/candle-' + merged_df['img_url']
+    merged_df = pd.merge(matches, reviews_df, left_on='id', right_on='candle_id', how='inner')
+    merged_df['img_url'] = request.url_root + 'static/candle-' + merged_df['img_url']
 
-#     matches_filtered = merged_df[['name', 'category', 'description', 'overall_rating', 
-#                                   'overall_reviewcount', 'img_url', 'link', 'review_body', 'rating_value']]
-#     matches_filtered_json = matches_filtered.to_json(orient='records')
+    matches_filtered = merged_df[['name', 'category', 'description', 'overall_rating', 
+                                  'overall_reviewcount', 'img_url', 'link', 'review_body', 'rating_value']]
+    matches_filtered_json = matches_filtered.to_json(orient='records')
 
-#     print(matches_filtered_json)
-#     return matches_filtered_json
+    print(matches_filtered_json)
+    return matches_filtered_json
 
 def cosine_sim_search(query):
     sim_df = similarity.retrieve_top_k_candles(query, 15)
@@ -170,4 +171,4 @@ def candles_search():
     return json.dumps(results)
 
 if 'DB_NAME' not in os.environ:
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=True, host="0.0.0.0", port=5001)
