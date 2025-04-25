@@ -178,6 +178,7 @@ def candles_search():
 
         results.append(candle_data)
 
+    print(results)
     return json.dumps(results)
 
 if 'DB_NAME' not in os.environ:

@@ -43,7 +43,7 @@
 
 
   <script>
-    function answerBoxTemplate(name, url, desc, rating, numReviews, img_url, sim_score) {
+    function answerBoxTemplate(name, url, desc, rating, numReviews, img_url, sim_score, id) {
       return `
         <div class='candle-item'>
           <div class="candle-child-container">
@@ -59,6 +59,7 @@
               <h3 class='card-back-title'><a href="${url}" target="_blank" class="candle-link">${name}</a></h3>
               <p class='candle-desc'>${desc}</p>
               <p class='candle-rating'>${rating} <img class="rating-star" src="static/images/star.png" alt="stars"> (${numReviews} reviews)</p>
+              <button class="more-info" data-id="${id}">more info</button>
             </div>
           </div>
         </div>`
@@ -206,21 +207,21 @@
           uniqueData.forEach((row, index) => {
             let tempDiv = document.createElement("div");
             tempDiv.innerHTML = answerBoxTemplate(
-              row.name, row.link, row.description, row.overall_rating, row.overall_reviewcount, row.img_url, row.sim_score
+              row.name, row.link, row.description, row.overall_rating, row.overall_reviewcount, row.img_url, row.sim_score, row.id
             );
 
-            if (row.svd_labels_new && row.svd_labels_new.length > 0) {
-              const svdContainer = document.createElement("div");
-              svdContainer.className = "svd-labels-container";
+            // if (row.svd_labels_new && row.svd_labels_new.length > 0) {
+            //   const svdContainer = document.createElement("div");
+            //   svdContainer.className = "svd-labels-container";
 
-              row.svd_labels_new.forEach(([label, value]) => {
-                const labelDiv = document.createElement("div");
-                labelDiv.innerHTML = `${label} ${value.toFixed(3)}`;
-                svdContainer.appendChild(labelDiv);
-              });
+            //   row.svd_labels_new.forEach(([label, value]) => {
+            //     const labelDiv = document.createElement("div");
+            //     labelDiv.innerHTML = `${label} ${value.toFixed(3)}`;
+            //     svdContainer.appendChild(labelDiv);
+            //   });
 
-              tempDiv.appendChild(svdContainer);
-            }
+            //   tempDiv.appendChild(svdContainer);
+            // }
 
             tempDiv.firstElementChild.addEventListener("click", (e) => {
               if (!e.target.closest('a')) {
@@ -233,11 +234,75 @@
             setTimeout(() => {
               tempDiv.firstElementChild.classList.add("animated");
             }, index * 200); // 100ms per item
+
+
+            // POPUP
+            const popup = document.createElement("div");
+            popup.className = "popup";
+            popup.id = `popup-${row.id}`;
+            popup.style.display = "none";
+            popup.innerHTML = `
+                <div class="popup-header">
+                  <span class="popup-title">${row.name}</span>
+                  <button class="popup-close">&times;</button>
+                </div>
+                <div class="popup-content">
+                  <h4 class='svd-features'>top features</h4>
+                  ${row.svd_labels_new.map(([label, value]) => `<div>${label}: ${value.toFixed(3)}</div>`).join("")}
+
+                  <h4 class='rev-desc'>reviews</h4>
+                  <ul class='review-list'>
+                    ${(row.reviews || []).slice(0, 3).map(r => `<li>"${r.review_body}"</li>`).join("")}
+                  </ul>
+                </div>
+              `;
+            document.body.appendChild(popup);
+
+            tempDiv.querySelector(".more-info").addEventListener("click", () => {
+              tempDiv.firstElementChild.classList.toggle("expanded");
+
+              const pop = document.getElementById(`popup-${row.id}`);
+              pop.style.display = "block";
+              makeDraggable(pop);
+            });
+
+            popup.querySelector(".popup-close").addEventListener("click", () => {
+              popup.style.display = "none";
+            });
+
+
           });
 
           document.getElementById("answer-box").classList.remove("hidden");
         });
+
     }
+
+    function makeDraggable(popup) {
+      const header = popup.querySelector(".popup-header");
+      let offsetX = 0, offsetY = 0, isDragging = false;
+
+      header.onmousedown = function (e) {
+        isDragging = true;
+        offsetX = e.clientX - popup.offsetLeft;
+        offsetY = e.clientY - popup.offsetTop;
+
+        document.onmousemove = function (e) {
+          if (isDragging) {
+            popup.style.left = `${e.clientX - offsetX}px`;
+            popup.style.top = `${e.clientY - offsetY}px`;
+          }
+        };
+
+        document.onmouseup = function () {
+          isDragging = false;
+          document.onmousemove = null;
+          document.onmouseup = null;
+        };
+      };
+    }
+
+
 
     // fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
     // .then((response) => response.json())
@@ -247,6 +312,8 @@
     //     tempDiv.innerHTML = answerBoxTemplate(row.title, row.descr, row.imdb_rating)
     //     document.getElementById("answer-box").appendChild(tempDiv)
     // }));
+
+
 
   </script>
 </body>

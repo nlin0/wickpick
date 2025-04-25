@@ -21,10 +21,10 @@ body {
 
 .wickpick-img {
     display: flex;
-    width: 60%;
+    width: 68%;
     margin: 0px;
     margin-left: -5%;
-    margin-bottom: -8%;
+    margin-bottom: -7.8%;
 }
 
 .logo-header {
@@ -50,7 +50,7 @@ body {
 
     margin-top: 10px;
     padding: 18px;
-    width: 800px;
+    width: 75%;
     background-color: rgb(199, 144, 144);
 }
 
@@ -159,6 +159,8 @@ input {
     padding-bottom: 0px;
     box-sizing: border-box;
 }
+
+
 
 /* back of card */
 .card-back {
@@ -394,4 +396,41 @@ input {
 .clear-filter-btn:hover {
     background-color: #f1dede;
     /* color: white; */
+}
+
+.popup {
+    position: fixed;
+    top: 20%;
+    left: 30%;
+    width: 300px;
+    background: #fff;
+    border: 2px solid #aaa;
+    border-radius: 10px;
+    padding: 10px;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.popup-header {
+    display: flex;
+    justify-content: space-between;
+    background: #f1f1f1;
+    padding: 5px 10px;
+    cursor: move;
+    font-weight: bold;
+    border-bottom: 1px solid #ccc;
+}
+
+.popup-content {
+    padding: 10px;
+    font-size: 0.9rem;
+}
+
+.popup-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #666;
 }
