@@ -101,7 +101,7 @@ class PandasSim:
     # def helper_cosine_sim(self, vec1, vec2):
     #     return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
 
-    def helper_jaccard_sim(self, vec1, vec2, edit_threshold=2):
+    def helper_jaccard_sim(self, vec1, vec2, edit_threshold=5):
         # jaccard on unique terms
         # print(f"Comparing token sets: {vec1} vs {vec2}")
         matched1 = set()
@@ -232,6 +232,9 @@ class PandasSim:
         
         if abs_name < 1e-6 and abs_rev < 1e-6 and abs_desc < 1e-6:
             return (0.33, 0.33, 0.34)
+        
+        if name_sim == 1.0:
+            return (1.0, 0, 0)
         
         total_abs = abs_name + abs_rev + abs_desc
         
