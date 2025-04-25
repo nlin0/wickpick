@@ -21,10 +21,10 @@ body {
 
 .wickpick-img {
     display: flex;
-    width: 50%;
+    width: 60%;
     margin: 0px;
     margin-left: -5%;
-    margin-bottom: -6.8%;
+    margin-bottom: -8%;
 }
 
 .logo-header {
@@ -43,15 +43,14 @@ body {
 
 .input-box {
     border-radius: 50px;
-
-
-
     border: 1px solid rgba(255, 227, 227, 0.939);
     display: flex;
     align-items: center;
+    font-size: 16px;
+
     margin-top: 10px;
     padding: 18px;
-    width: 600px;
+    width: 800px;
     background-color: rgb(199, 144, 144);
 }
 
