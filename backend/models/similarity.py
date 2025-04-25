@@ -179,11 +179,20 @@ class PandasSim:
             combined_sims[candle_id] = (w1 * name_sim) + (w2 * rev_sim) + (w3 * desc_sim)
         
         sorted_candle_ids = sorted(combined_sims.keys(), key=lambda cid: combined_sims[cid], reverse=True)
+        sorted_combined_sims = sorted(combined_sims.items(), key=lambda item: item[1], reverse=True)
+
         
         # Return top k unique candles
         top_k_ids = sorted_candle_ids[:k]
+        top_k_sims = sorted_combined_sims[:k]
+        print(top_k_sims)
         
         return self.candles.iloc[top_k_ids]
+        #JOLLY TRYNG HERE:
+        
+
+
+
 
     def retrieve_bottom_k_candles(self,query,k):
         review_sims = {}
