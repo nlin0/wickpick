@@ -205,7 +205,11 @@ class PandasSim:
             combined_sims[candle_id] = (w1 * name_sim) + (w2 * rev_sim) + (w3 * desc_sim)
         
         sorted_candle_ids = sorted(combined_sims.keys(), key=lambda cid: combined_sims[cid], reverse=True)
-        
+        result_df = self.candles.iloc[sorted_candle_ids].copy()
+        result_df['sim_score'] = [combined_sims[idx] for idx in sorted_candle_ids]
+
+        return result_df
+
         return self.candles.iloc[sorted_candle_ids]
     
     def retrieve_top_k_candles_svd(self, query, k, w1=0.2, w2=0.4, w3=0.4):
