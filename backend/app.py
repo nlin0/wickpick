@@ -98,7 +98,7 @@ def cosine_sim_search(query):
     merged_df['img_url'] = request.url_root + 'static/candle-' + merged_df['img_url']
     unique_candles = merged_df[['id', 'name', 'category', 'description', 'overall_rating', 
                               'overall_reviewcount', 'img_url', 'link']].drop_duplicates()
-    
+
     results = []
 
     for _, candle in unique_candles.iterrows():
@@ -134,7 +134,8 @@ def candles_search():
     text = request.args.get("query", "")
     category = request.args.get("category", "").lower()
 
-    sim_df = similarity.retrieve_top_k_candles(text, 15)
+    sim_df = similarity.retrieve_top_k_candles_svd(text, 20)
+    # sim_df = similarity.retrieve_top_k_candles(text, 20)
 
     merged_df = pd.merge(sim_df, reviews_df, left_on='id', right_on='candle_id', how='inner')
     merged_df['img_url'] = request.url_root + 'static/candle-' + merged_df['img_url']

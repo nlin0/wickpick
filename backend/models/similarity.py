@@ -9,22 +9,15 @@ from scipy.sparse.linalg import svds
 # import nltk
 # from nltk.stem.wordnet import WordNetLemmatizer
 
-# from models.candle import Candle
-
 class PandasSim:
     def __init__(self, candles_df, reviews_df):
-        # print(os.getcwd())
-        # nltk.data.find(f"{os.getcwd()}/nltk_data/corpora/wordnet")
-        # nltk.data.path.append("./nltk_data")
-        # nltk.download('wordnet', download_dir=f"{os.getcwd()}/nltk_data/corpora/wordnet")
-        # nltk.download('wordnet', download_dir="./nltk_data")
         self.candles = candles_df
         self.reviews = reviews_df['review_body'].tolist()
         self.review_idx_to_candle_idx = {i: reviews_df.iloc[i]['candle_id'] for i in range(len(reviews_df))}
 
         # TODO: Fix the nltk thingy so that the lemmatizer works
         # self.tfidf_vectorizer = TfidfVectorizer(tokenizer=self.custom_tokenizer, stop_words='english')
-        self.tfidf_vectorizer = TfidfVectorizer(stop_words='english')
+        self.tfidf_vectorizer = TfidfVectorizer(stop_words='english', min_df=1, max_df=0.8)
 
         # First fit on all text to establish the vocabulary
         all_text = [r if r is not None else "" for r in self.reviews] + [d if d is not None else "" for d in self.candles['description']]
@@ -60,7 +53,6 @@ class PandasSim:
         return dp[len(s1)][len(s2)]
 
     def generic_tokenizer(self, corpus):
-        # print(re.sub(r"[^A-Za-z0-9\-]", " ", corpus).lower().split())
         return re.sub(r"[^A-Za-z0-9\-]", " ", corpus).lower().split()
 
     # SVD INITIALIZATION HELPERS
@@ -140,34 +132,47 @@ class PandasSim:
         If the query does not yield good distribution (i.e. highest and 
         lowest are not diff enough), then perform rocchio and redo?
         '''
+        print("count of all candles:", len(self.candles))
+
+        # Review similarity
         modified_query = self.transform_query_svd(query, self.reviews_words_compressed)
-        review_sims = self.helper_cosine_sim(self.reviews_compressed_normed, modified_query)
-        top_k_revs_by_idx = np.argsort(-review_sims)[:k+1]
+        review_sims_per_review = self.helper_cosine_sim(self.reviews_compressed_normed, modified_query)
+        review_df = pd.DataFrame({
+            'candle_id': [self.review_idx_to_candle_idx[i] for i in range(len(review_sims_per_review))],
+            'similarity': review_sims_per_review
+        })
+        review_sims = review_df.groupby('candle_id')['similarity'].mean().to_dict()
+        print("rev sims", review_sims, len(review_sims))
+        print()
 
+        # Description similarity 
         modified_query = self.transform_query_svd(query, self.descriptions_words_compressed)
-        descs_sims = self.helper_cosine_sim(self.descriptions_compressed_normed, modified_query)
-        top_k_descs_by_idx = np.argsort(-descs_sims)[:k+1]
+        desc_sims_list = self.helper_cosine_sim(self.descriptions_compressed_normed, modified_query)
+        desc_sims = {i: sim for i, sim in enumerate(desc_sims_list)}
+        print("desc sims", desc_sims, len(desc_sims))
 
+        # Name similarity
         name_sims = {}
         query_tokenized = self.generic_tokenizer(query)
+        query_tokenized = self.generic_tokenizer(query)
         for i in range(len(self.candles)):
-            cand_name_tokenized = self.generic_tokenizer(self.candles[i]["name"])
+            cand_name_tokenized = self.generic_tokenizer(self.candles.loc[i, "name"])
             name_sims[i] = self.helper_jaccard_sim(query_tokenized, cand_name_tokenized)
+
+        combined_sims = {}
+        for candle_id in set(review_sims.keys()) | set(desc_sims.keys()) | set(name_sims.keys()):
+            rev_sim = review_sims.get(candle_id, 0)
+            desc_sim = desc_sims.get(candle_id, 0)
+            name_sim = name_sims.get(candle_id, 0)
+            combined_sims[candle_id] = (w1 * name_sim) + (w2 * rev_sim) + (w3 * desc_sim)
         
-        #TODO: Implement combining logic
-        # combined_sims = {}
-        # for candle_id in set(review_sims.keys()) | set(desc_sims.keys()) | set(name_sims.keys()):
-        #     rev_sim = review_sims.get(candle_id, 0)
-        #     desc_sim = desc_sims.get(candle_id, 0)
-        #     name_sim = name_sims.get(candle_id, 0)
-        #     combined_sims[candle_id] = (w1 * name_sim) + (w2 * rev_sim) + (w3 * desc_sim)
+        sorted_candle_ids = sorted(combined_sims.keys(), key=lambda cid: combined_sims[cid], reverse=True)
         
-        # sorted_candle_ids = sorted(combined_sims.keys(), key=lambda cid: combined_sims[cid], reverse=True)
+        # Return top k unique candles
+        top_k_ids = sorted_candle_ids[:k]
         
-        # # Return top k unique candles
-        # top_k_ids = sorted_candle_ids[:k]
-        
-        # return self.candles.iloc[top_k_ids]
+        return self.candles.iloc[top_k_ids]
+
     
     def retrieve_top_k_candles(self, query, k, w1=0.4, w2=0.2, w3=0.2):
         '''
@@ -183,7 +188,6 @@ class PandasSim:
         review_sims = {}
         for i in range(len(self.reviews)):
             candle_id = self.review_idx_to_candle_idx[i]
-            # print(self.candles[candle_id])
             sim = self.cosine_sim_query_candles(query, i)
             if candle_id in review_sims:
                 review_sims[candle_id] = max(review_sims[candle_id], sim)
@@ -192,7 +196,6 @@ class PandasSim:
         
         desc_sims = {}
         for i in range(len(self.candles)):
-            # print(self.candles[i])
             candle_id = i  
             desc_sim = self.helper_cosine_sim(self.tfidf_description[i], self.transform_query(query))
             desc_sims[candle_id] = desc_sim
