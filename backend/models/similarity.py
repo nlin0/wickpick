@@ -203,14 +203,14 @@ class PandasSim:
             combined_sims[candle_id] = (w1 * name_sim) + (w2 * rev_sim) + (w3 * desc_sim)
 
         # Pretty print similarities
-        print("\nSimilarity Scores by Candle:")
-        print("-" * 50)
-        for candle_id in combined_sims.keys():
-            print(f"\nCandle {candle_id} ({self.candles.loc[candle_id, 'name']}):")
-            print(f"Review similarity: {review_sims.get(candle_id, 0):.3f}")
-            print(f"Description similarity: {desc_sims.get(candle_id, 0):.3f}")
-            print(f"Name similarity: {name_sims.get(candle_id, 0):.3f}")
-            print(f"Combined similarity: {combined_sims[candle_id]:.3f}")
+        # print("\nSimilarity Scores by Candle:")
+        # print("-" * 50)
+        # for candle_id in combined_sims.keys():
+        #     print(f"\nCandle {candle_id} ({self.candles.loc[candle_id, 'name']}):")
+        #     print(f"Review similarity: {review_sims.get(candle_id, 0):.3f}")
+        #     print(f"Description similarity: {desc_sims.get(candle_id, 0):.3f}")
+        #     print(f"Name similarity: {name_sims.get(candle_id, 0):.3f}")
+        #     print(f"Combined similarity: {combined_sims[candle_id]:.3f}")
 
         sorted_candle_ids = sorted(combined_sims.keys(), key=lambda cid: combined_sims[cid], reverse=True)
         result_df = self.candles.iloc[sorted_candle_ids].copy()
