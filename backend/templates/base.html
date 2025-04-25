@@ -319,17 +319,22 @@
                   </div>
 
                   <p class="pop-descr">
-                    The top 5 tags for each candle was found by computing the 
+                    The top 5 tags above were found by computing the 
                     cosine similarity between the normalized compressed vector 
-                    of a candle and the compressed words matrix. These tags are shown below:
+                    of a candle and the compressed words matrix.
                   </p>
 
                   </div>
                 
-                  <h4 class='rev-desc'>reviews</h4>
                   <ul class='review-list'>
-                    ${(row.reviews || []).slice(0, 3).map(r => `<li class='rev-item'>"${r.review_body}"</li>`).join("")}
-                  </ul>
+                    ${(row.reviews || []).slice(0, 3).map(r => {
+              const reviewText = r.review_body && r.review_body.split(' ').slice(0, 100).join(' ') + (r.review_body && r.review_body.split(' ').length > 100 ? '...' : '');
+              return `<li class='rev-item'>
+    <div class="review-box">${reviewText}</div>
+  </li>`;
+            }).join("")
+              }
+                      </ul>
                 </div>
               `;
             document.body.appendChild(popup);

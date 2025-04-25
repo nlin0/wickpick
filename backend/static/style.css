@@ -509,3 +509,23 @@ input {
     margin: 2px;
     text-transform: lower;
 }
+
+.review-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.rev-item {
+    margin-bottom: 10px;
+}
+
+.review-box {
+    background-color: #ffffff;
+    /* Light gray background */
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    max-width: 300px;
+    word-wrap: break-word;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
