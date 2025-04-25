@@ -195,6 +195,13 @@
 
           const uniqueData = Object.values(uniqueCandles);
 
+          const answerBox = document.getElementById("answer-box");
+          answerBox.classList.remove("single-result");
+
+          if (uniqueData.length === 1) {
+            answerBox.classList.add("single-result");
+          }
+
           uniqueData.forEach(row => {
             let tempDiv = document.createElement("div");
             tempDiv.innerHTML = answerBoxTemplate(

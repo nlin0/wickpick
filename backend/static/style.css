@@ -282,6 +282,13 @@ input {
     pointer-events: auto;
 }
 
+.single-result .candle-item {
+    width: 300px;
+    height: 300px;
+    margin: 0 auto 28px auto;
+    transform: scale(0.95);
+}
+
 .filters {
     display: flex;
     flex-direction: row;
