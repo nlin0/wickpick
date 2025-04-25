@@ -44,6 +44,21 @@ class PandasSim:
     #     words = re.sub(r"[^A-Za-z0-9\-]", " ", corpus).lower().split()
     #     return [stemmer.lemmatize(word) for word in words]
     
+     # edit distance algo
+    def edit_distance(self, s1, s2):
+        dp = np.zeros((len(s1)+1, len(s2)+1), dtype=int)
+        for i in range(len(s1)+1):
+            for j in range(len(s2)+1):
+                if i == 0:
+                    dp[i][j] = j
+                elif j == 0:
+                    dp[i][j] = i
+                elif s1[i-1] == s2[j-1]:
+                    dp[i][j] = dp[i-1][j-1]
+                else:
+                    dp[i][j] = 1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])
+        return dp[len(s1)][len(s2)]
+
     def generic_tokenizer(self, corpus):
         # print(re.sub(r"[^A-Za-z0-9\-]", " ", corpus).lower().split())
         return re.sub(r"[^A-Za-z0-9\-]", " ", corpus).lower().split()
@@ -60,14 +75,32 @@ class PandasSim:
     
     # GENERIC SIMILARITY FUNCTION
     def helper_cosine_sim(self, vec1, vec2):
-        return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
+        norm1 = np.linalg.norm(vec1)
+        norm2 = np.linalg.norm(vec2)
+        if norm1 == 0 or norm2 == 0:
+            return 0.0
+        return np.dot(vec1, vec2) / (norm1 * norm2)
 
-    def helper_jaccard_sim(self, vec1, vec2):
+    def helper_jaccard_sim(self, vec1, vec2, edit_threshold=2):
         # jaccard on unique terms
-        union = len(np.union1d(vec1, vec2))
+        # print(f"Comparing token sets: {vec1} vs {vec2}")
+        matched1 = set()
+        matched2 = set()
+
+        for i, token1 in enumerate(vec1):
+            for j, token2 in enumerate(vec2):
+                dist = self.edit_distance(token1, token2)
+                if dist <= edit_threshold:
+                    # print(f"MATCH: {token1} ~ {token2} (dist={dist})")
+                    matched1.add(i)
+                    matched2.add(j)
+
+        intersection = len(matched1)
+        union = len(set(range(len(vec1))) | set(range(len(vec2))))
+
         if union == 0:
             return 0
-        return len(np.intersect1d(vec1, vec2)) / union
+        return intersection / union
 
     # QUERY TRANSFORMATION
     def transform_query(self, query):
@@ -136,7 +169,7 @@ class PandasSim:
         
         # return self.candles.iloc[top_k_ids]
     
-    def retrieve_top_k_candles(self, query, k, w1=0.2, w2=0.4, w3=0.4):
+    def retrieve_top_k_candles(self, query, k, w1=0.4, w2=0.2, w3=0.2):
         '''
         Returns the top k candles based on a custom similarity score:
         Similarity between a query and a candle is the weighted sum of 
@@ -168,7 +201,7 @@ class PandasSim:
         query_tokenized = self.generic_tokenizer(query)
         for i in range(len(self.candles)):
             # print(self.candles.loc[candle_id, 'name'], i)
-            cand_name_tokenized = self.generic_tokenizer(self.candles.loc[candle_id, 'name'])
+            cand_name_tokenized = self.generic_tokenizer(self.candles.loc[i, 'name'])
             name_sims[i] = self.helper_jaccard_sim(query_tokenized, cand_name_tokenized)
         
         combined_sims = {}
