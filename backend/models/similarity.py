@@ -14,9 +14,16 @@ class PandasSim:
         self.reviews = reviews_df['review_body'].tolist()
         self.review_idx_to_candle_idx = {i: int(reviews_df.iloc[i]['candle_id']) for i in range(len(reviews_df))}
 
-        # my_stop_words = ["scent", "notes"]
-        # stop_wrds = text.ENGLISH_STOP_WORDS.union(my_stop_words)
-        # self.tfidf_vectorizer = TfidfVectorizer(stop_words=stop_wrds, min_df=1, max_df=0.95)
+        my_stop_words = ["scent", "notes"]
+
+        # First, create a completely new regular set from the frozen set
+        # stop_words_list = list(text.ENGLISH_STOP_WORDS)
+        # stop_words_set = set(stop_words_list)
+
+        # # Add your custom words
+        # for word in my_stop_words:
+        #     stop_words_set.add(word)
+        # self.tfidf_vectorizer = TfidfVectorizer(stop_words=stop_words_set, min_df=1, max_df=0.95)
         self.tfidf_vectorizer = TfidfVectorizer(stop_words='english', min_df=1, max_df=0.95)
 
         # First fit on all text to establish the vocabulary
@@ -101,7 +108,7 @@ class PandasSim:
     # def helper_cosine_sim(self, vec1, vec2):
     #     return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
 
-    def helper_jaccard_sim(self, vec1, vec2, edit_threshold=5):
+    def helper_jaccard_sim(self, vec1, vec2, edit_threshold=2):
         # jaccard on unique terms
         # print(f"Comparing token sets: {vec1} vs {vec2}")
         matched1 = set()
