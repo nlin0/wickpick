@@ -481,7 +481,9 @@ input {
     text-align: center;
     font-size: 18px;
     border-radius: 0px;
-    background-color: none;
+    background-color: transparent;
+    color: rgb(223, 126, 126);
+    margin-bottom: 18px;
 }
 
 .top-feats {
@@ -520,12 +522,13 @@ input {
 }
 
 .review-box {
-    background-color: #ffffff;
-    /* Light gray background */
+    margin-top: -10px;
+    background-color: #fffefe;
     padding: 10px;
     border-radius: 8px;
     font-size: 14px;
     max-width: 300px;
     word-wrap: break-word;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    color: rgba(116, 29, 29, 0.587);
+    box-shadow: 0 2px 5px rgba(61, 10, 10, 0.392);
 }

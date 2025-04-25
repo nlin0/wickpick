@@ -330,8 +330,8 @@
                     ${(row.reviews || []).slice(0, 3).map(r => {
               const reviewText = r.review_body && r.review_body.split(' ').slice(0, 100).join(' ') + (r.review_body && r.review_body.split(' ').length > 100 ? '...' : '');
               return `<li class='rev-item'>
-    <div class="review-box">${reviewText}</div>
-  </li>`;
+                      <div class="review-box">${reviewText}</div>
+                    </li>`;
             }).join("")
               }
                       </ul>
