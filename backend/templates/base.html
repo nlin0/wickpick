@@ -247,12 +247,13 @@
                   <button class="popup-close">&times;</button>
                 </div>
                 <div class="popup-content">
+                  
                   <h4 class='svd-features'>top features</h4>
                   ${row.svd_labels_new.map(([label, value]) => `<div>${label}: ${value.toFixed(3)}</div>`).join("")}
 
                   <h4 class='rev-desc'>reviews</h4>
                   <ul class='review-list'>
-                    ${(row.reviews || []).slice(0, 3).map(r => `<li>"${r.review_body}"</li>`).join("")}
+                    ${(row.reviews || []).slice(0, 3).map(r => `<li class='rev-item'>"${r.review_body}"</li>`).join("")}
                   </ul>
                 </div>
               `;
@@ -274,6 +275,9 @@
           });
 
           document.getElementById("answer-box").classList.remove("hidden");
+          document.getElementById("answer-box").scrollIntoView({
+            behavior: "smooth"
+          });
         });
 
     }
