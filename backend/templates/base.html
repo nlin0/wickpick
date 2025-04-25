@@ -57,7 +57,10 @@
         "candle style?",
         "candle preference?",
         "we can help you find candles!",
-        "type here!"
+        "type here!",
+        "what the sigma",
+        "take a whiff",
+        "need a candle for your room?"
       ];
 
       let msgIndex = 0;
@@ -75,7 +78,7 @@
           clearInterval(typingInterval);
           setTimeout(() => {
             erasePlaceholder();
-          }, 1500); // Pause after full message
+          }, 2000); // Pause after full message
         }
       }
 
@@ -108,7 +111,7 @@
               <h3 class='candle-name'><a href="${url}" target="_blank" class="candle-link">${name}</a></h3>
               <div class="candle-img-container">
                 <img class="candle-photo" src="${img_url}" alt="${name}">
-                <p class="sim-score">Similarity: ${sim_score.toFixed(3)}</p>
+                <p class="sim-score">similarity score: ${sim_score.toFixed(3)}</p>
               </div>
             </div>
             
@@ -126,10 +129,8 @@
     function checkEnter(event) {
       if (event.key === "Enter") {
         filterText();
+        event.preventDefault();
 
-        // document.getElementById("answer-box").scrollIntoView({
-        //   behavior: "smooth"
-        // });
       }
     }
 
@@ -293,6 +294,9 @@
             }, index * 200); // 100ms per item
 
 
+
+
+
             // POPUP
             const popup = document.createElement("div");
             popup.className = "popup";
@@ -304,19 +308,21 @@
                   <button class="popup-close">&times;</button>
                 </div>
                 <div class="popup-content">
-                  <div class="sim-score">
-                  similarity: ${(row.sim_score * 100).toFixed(1)}%
+                  <div class="sim-score" id="popup-sim-score">
+                  ${(row.sim_score * 100).toFixed(2)}% similarity to query
                 </div>
 
                   <div class="top-feats">
-                    <p class="pop-descr">
+                
+                  <div class="tag-list">
+                    ${row.svd_labels_new.map(([label, value]) => `<p class="label-svd">${label}\n${value.toFixed(3)}</p>`).join("")}
+                  </div>
+
+                  <p class="pop-descr">
                     The top 5 tags for each candle was found by computing the 
                     cosine similarity between the normalized compressed vector 
                     of a candle and the compressed words matrix. These tags are shown below:
                   </p>
-                  
-                  <h4 class='svd-features'>top tags</h4>
-                  ${row.svd_labels_new.map(([label, value]) => `<div>${label}: ${value.toFixed(3)}</div>`).join("")}
 
                   </div>
                 
