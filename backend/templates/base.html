@@ -129,10 +129,8 @@
     function checkEnter(event) {
       if (event.key === "Enter") {
         filterText();
+        event.preventDefault();
 
-        // document.getElementById("answer-box").scrollIntoView({
-        //   behavior: "smooth"
-        // });
       }
     }
 
@@ -296,6 +294,9 @@
             }, index * 200); // 100ms per item
 
 
+
+
+
             // POPUP
             const popup = document.createElement("div");
             popup.className = "popup";
@@ -307,19 +308,21 @@
                   <button class="popup-close">&times;</button>
                 </div>
                 <div class="popup-content">
-                  <div class="sim-score">
+                  <div class="sim-score" id="popup-sim-score">
                   ${(row.sim_score * 100).toFixed(2)}% similarity to query
                 </div>
 
                   <div class="top-feats">
-                    <p class="pop-descr">
+                
+                  <div class="tag-list">
+                    ${row.svd_labels_new.map(([label, value]) => `<p class="label-svd">${label}\n${value.toFixed(3)}</p>`).join("")}
+                  </div>
+
+                  <p class="pop-descr">
                     The top 5 tags for each candle was found by computing the 
                     cosine similarity between the normalized compressed vector 
                     of a candle and the compressed words matrix. These tags are shown below:
                   </p>
-                  
-                  <h4 class='svd-features'>top tags</h4>
-                  ${row.svd_labels_new.map(([label, value]) => `<div>${label}: ${value.toFixed(3)}</div>`).join("")}
 
                   </div>
                 
