@@ -166,7 +166,8 @@ def candles_search():
             'link': candle['link'],
             'reviews': [],
             'sim_score': candle['sim_score'],
-            'svd_labels': similarity.svd_dim_labels(int(candle['id']), top_dims=10, top_n_words=1)
+            'svd_labels': similarity.svd_dim_labels(int(candle['id']), top_dims=10, top_n_words=1),
+            'svd_labels_new': similarity.top_words_by_id[int(candle['id']) - 1]
         }
 
         for _, review in candle_reviews.iterrows():
