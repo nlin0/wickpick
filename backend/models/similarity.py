@@ -14,17 +14,16 @@ class PandasSim:
         self.reviews = reviews_df['review_body'].tolist()
         self.review_idx_to_candle_idx = {i: int(reviews_df.iloc[i]['candle_id']) for i in range(len(reviews_df))}
 
-        my_stop_words = ["scent", "notes"]
-
-        # First, create a completely new regular set from the frozen set
-        # stop_words_list = list(text.ENGLISH_STOP_WORDS)
-        # stop_words_set = set(stop_words_list)
-
-        # # Add your custom words
-        # for word in my_stop_words:
-        #     stop_words_set.add(word)
-        # self.tfidf_vectorizer = TfidfVectorizer(stop_words=stop_words_set, min_df=1, max_df=0.95)
-        self.tfidf_vectorizer = TfidfVectorizer(stop_words='english', min_df=1, max_df=0.95)
+        my_stop_words = [
+            "scent", "notes", "note", "nice", "love", "favorite", "smells", "like", "fragrance", "time",
+            "base", "top", "mid", "middle", "one", "two", "three", "oz", "ounce", "inch", "inches",
+            "smell", "aroma", "candle", "candles", "burning", "burn", "jar", "wax", "wick", "flame",
+            "great", "good", "loved", "liked", "beautiful", "day", "days", "time", "long", "hour", "hours",
+            "yankee", "boy", "smells", "yankeecandle", "boysmells"
+        ]
+        stop_words_list = list(text.ENGLISH_STOP_WORDS) + my_stop_words
+        self.tfidf_vectorizer = TfidfVectorizer(stop_words=stop_words_list, min_df=1, max_df=0.95)
+        # self.tfidf_vectorizer = TfidfVectorizer(stop_words='english', min_df=1, max_df=0.95)
 
         # First fit on all text to establish the vocabulary
         names = [n if n is not None else "" for n in self.candles['name']]
@@ -204,14 +203,14 @@ class PandasSim:
             combined_sims[candle_id] = (w1 * name_sim) + (w2 * rev_sim) + (w3 * desc_sim)
 
         # Pretty print similarities
-        print("\nSimilarity Scores by Candle:")
-        print("-" * 50)
-        for candle_id in combined_sims.keys():
-            print(f"\nCandle {candle_id} ({self.candles.loc[candle_id, 'name']}):")
-            print(f"Review similarity: {review_sims.get(candle_id, 0):.3f}")
-            print(f"Description similarity: {desc_sims.get(candle_id, 0):.3f}")
-            print(f"Name similarity: {name_sims.get(candle_id, 0):.3f}")
-            print(f"Combined similarity: {combined_sims[candle_id]:.3f}")
+        # print("\nSimilarity Scores by Candle:")
+        # print("-" * 50)
+        # for candle_id in combined_sims.keys():
+        #     print(f"\nCandle {candle_id} ({self.candles.loc[candle_id, 'name']}):")
+        #     print(f"Review similarity: {review_sims.get(candle_id, 0):.3f}")
+        #     print(f"Description similarity: {desc_sims.get(candle_id, 0):.3f}")
+        #     print(f"Name similarity: {name_sims.get(candle_id, 0):.3f}")
+        #     print(f"Combined similarity: {combined_sims[candle_id]:.3f}")
 
         sorted_candle_ids = sorted(combined_sims.keys(), key=lambda cid: combined_sims[cid], reverse=True)
         result_df = self.candles.iloc[sorted_candle_ids].copy()
