@@ -529,6 +529,11 @@ input {
     font-size: 14px;
     max-width: 300px;
     word-wrap: break-word;
-    color: rgba(116, 29, 29, 0.587);
+    color: rgba(132, 12, 12, 0.587);
     box-shadow: 0 2px 5px rgba(61, 10, 10, 0.392);
+}
+
+.pop-descr {
+    color: rgba(132, 12, 12, 0.587);
+
 }
