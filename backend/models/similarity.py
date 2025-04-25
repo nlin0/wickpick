@@ -14,17 +14,16 @@ class PandasSim:
         self.reviews = reviews_df['review_body'].tolist()
         self.review_idx_to_candle_idx = {i: int(reviews_df.iloc[i]['candle_id']) for i in range(len(reviews_df))}
 
-        my_stop_words = ["scent", "notes"]
-
-        # First, create a completely new regular set from the frozen set
-        # stop_words_list = list(text.ENGLISH_STOP_WORDS)
-        # stop_words_set = set(stop_words_list)
-
-        # # Add your custom words
-        # for word in my_stop_words:
-        #     stop_words_set.add(word)
-        # self.tfidf_vectorizer = TfidfVectorizer(stop_words=stop_words_set, min_df=1, max_df=0.95)
-        self.tfidf_vectorizer = TfidfVectorizer(stop_words='english', min_df=1, max_df=0.95)
+        my_stop_words = [
+            "scent", "notes", "note", "nice", "love", "favorite", "smells", "like", "fragrance", "time",
+            "base", "top", "mid", "middle", "one", "two", "three", "oz", "ounce", "inch", "inches",
+            "smell", "aroma", "candle", "candles", "burning", "burn", "jar", "wax", "wick", "flame",
+            "great", "good", "loved", "liked", "beautiful", "day", "days", "time", "long", "hour", "hours",
+            "yankee", "boy", "smells", "yankeecandle", "boysmells"
+        ]
+        stop_words_list = list(text.ENGLISH_STOP_WORDS) + my_stop_words
+        self.tfidf_vectorizer = TfidfVectorizer(stop_words=stop_words_list, min_df=1, max_df=0.95)
+        # self.tfidf_vectorizer = TfidfVectorizer(stop_words='english', min_df=1, max_df=0.95)
 
         # First fit on all text to establish the vocabulary
         names = [n if n is not None else "" for n in self.candles['name']]
