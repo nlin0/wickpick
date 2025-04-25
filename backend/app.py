@@ -52,16 +52,6 @@ with open(json_file_path, 'r') as file:
                     }
                 reviews_data.append(review_info)
 
-
-
-        # for review_key, review in candle['reviews'].items():
-        #     review_info = {
-        #         'candle_id': key,
-        #         'review_body': review['review_body'],
-        #         'rating_value': review['rating_value']
-        #     }
-        # reviews_data.append(review_info)
-
     candles_df = pd.DataFrame(candles_data)
     reviews_df = pd.DataFrame(reviews_data)
 
@@ -89,12 +79,6 @@ def json_search(query):
 
 def cosine_sim_search(query):
     sim_df = similarity.retrieve_top_k_candles(query, 15)
-    #print(" 111111111111 a sunny day skipping in the grass")
-    #rocchio_output = similarity.rocchio("a sunny day skipping in the grass")
-    #print(" 222222222222 hello my friend")
-    #actual_suggestions = similarity.get_query_suggestions(rocchio_output)
-    #print(actual_suggestions)
-    #print(sim_df)
     merged_df = pd.merge(sim_df, reviews_df, left_on='id', right_on='candle_id', how='inner')
     merged_df['img_url'] = request.url_root + 'static/candle-' + merged_df['img_url']
     unique_candles = merged_df[['id', 'name', 'category', 'description', 'overall_rating', 
@@ -135,9 +119,6 @@ def candles_search():
     query = request.args.get("query", "")
     category = request.args.get("category", "").lower()
 
-    # sim_df = similarity.retrieve_top_k_candles_svd(text, 20)
-    # sim_df = similarity.retrieve_top_k_candles(text, 20)
-
     # Integrated Rocchio (only perform Rocchio if there is atleast some similarity)
     sim_df = similarity.retrieve_sorted_candles_svd(query)
     max_sim_score = sim_df['sim_score'].max() if not sim_df.empty else 0
@@ -170,7 +151,6 @@ def candles_search():
             'link': candle['link'],
             'reviews': [],
             'sim_score': candle['sim_score'],
-            # 'svd_labels': similarity.svd_dim_labels(int(candle['id']), top_dims=10, top_n_words=1),
             'svd_labels_new': similarity.top_words_by_id[int(candle['id']) - 1]
         }
 
