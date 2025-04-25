@@ -224,6 +224,33 @@ class PandasSim:
         top_k_ids = sorted_candle_ids[:k]
         
         return self.candles.iloc[top_k_ids]
+    
+    def svd_dim_labels(self, candle_id, top_dims=10, top_n_words=1):
+        vocab = np.array(self.tfidf_vectorizer.get_feature_names_out())
+        svd_matrix = (self.descriptions_words_compressed + self.reviews_words_compressed) / 2
+        candle_index = self.candles[self.candles['id'] == str(candle_id)].index[0]
+        candle_vector = (self.tfidf_description[candle_index] + self.tfidf_reviews[candle_index]) / 2
+
+        candle_svd_vec = np.dot(candle_vector, svd_matrix)
+
+        top_indices = np.argsort(np.abs(candle_svd_vec))[-top_dims:][::-1]
+        results = []
+
+        for dim in top_indices:
+            top_pos_idx = np.argsort(svd_matrix[:, dim])[-top_n_words:][::-1]
+            top_neg_idx = np.argsort(svd_matrix[:, dim])[:top_n_words]
+
+            top_pos = [{"word": vocab[i], "value": round(svd_matrix[i, dim], 3)} for i in top_pos_idx]
+            top_neg = [{"word": vocab[i], "value": round(svd_matrix[i, dim], 3)} for i in top_neg_idx]
+
+            results.append({
+                "dimension": f"dim{dim}",
+                "value": round(candle_svd_vec[dim], 3),
+                "top_positive": top_pos,
+                "top_negative": top_neg
+            })
+
+        return results
 
     # NO SVD BAD BAD
     def retrieve_top_k_candles(self, query, k, w1=0.4, w2=0.2, w3=0.2):

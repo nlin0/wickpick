@@ -7,6 +7,7 @@ from flask import url_for
 from models.similarity import PandasSim
 from models.ml import MLModel
 import nltk
+import numpy as np
 
 # ROOT_PATH for linking with all your files.
 # Feel free to use a config.py or settings.py with a global export variable
@@ -159,7 +160,8 @@ def candles_search():
             'overall_reviewcount': candle['overall_reviewcount'],
             'img_url': candle['img_url'],
             'link': candle['link'],
-            'reviews': []
+            'reviews': [],
+            'svd_labels': similarity.svd_dim_labels(int(candle['id']), top_dims=10, top_n_words=1)
         }
 
         for _, review in candle_reviews.iterrows():

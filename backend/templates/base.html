@@ -201,6 +201,23 @@
               row.name, row.link, row.description, row.overall_rating, row.overall_reviewcount, row.img_url
             );
 
+            if (row.svd_labels && row.svd_labels.length > 0) {
+              const svdContainer = document.createElement("div");
+              svdContainer.className = "svd-labels-container";
+
+              row.svd_labels.forEach(label => {
+                const pos = label.top_positive.map(p => `${p.word} (${p.value})`).join(", ");
+                const neg = label.top_negative.map(n => `${n.word} (${n.value})`).join(", ");
+                const dimDiv = document.createElement("div");
+                dimDiv.innerHTML = `<strong>${label.dimension} (${label.value})</strong>: 
+                <span style="color: green;">[+ ${pos}]</span>
+                <span style="color: crimson;">[- ${neg}]</span>`;
+                svdContainer.appendChild(dimDiv);
+              });
+
+              tempDiv.appendChild(svdContainer);
+            }
+
             tempDiv.firstElementChild.addEventListener("click", (e) => {
               if (!e.target.closest('a')) {
                 tempDiv.firstElementChild.classList.toggle("expanded");
