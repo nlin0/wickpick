@@ -132,16 +132,20 @@ def home():
 
 @app.route("/candles")
 def candles_search():
-    text = request.args.get("query", "")
+    query = request.args.get("query", "")
     category = request.args.get("category", "").lower()
 
     # sim_df = similarity.retrieve_top_k_candles_svd(text, 20)
     # sim_df = similarity.retrieve_top_k_candles(text, 20)
-    sim_df = similarity.retrieve_sorted_candles_svd(text)
 
-    # for i in range(0,5):
-    #     top_words = similarity.get_top_n_candle_dimensions(i)
-    #     print(top_words)
+    # Integrated Rocchio (only perform Rocchio if there is atleast some similarity)
+    sim_df = similarity.retrieve_sorted_candles_svd(query)
+    max_sim_score = sim_df['sim_score'].max() if not sim_df.empty else 0
+    if (max_sim_score < 0.15 and max_sim_score > 0):
+        query = similarity.get_query_suggestions(similarity.rocchio(query), num_terms=10)
+        # print(max_sim_score)
+        # print(query)
+        sim_df = similarity.retrieve_sorted_candles_svd(query)
 
     merged_df = pd.merge(sim_df, reviews_df, left_on='id', right_on='candle_id', how='inner')
     merged_df['img_url'] = request.url_root + 'static/candle-' + merged_df['img_url']
@@ -166,7 +170,7 @@ def candles_search():
             'link': candle['link'],
             'reviews': [],
             'sim_score': candle['sim_score'],
-            'svd_labels': similarity.svd_dim_labels(int(candle['id']), top_dims=10, top_n_words=1),
+            # 'svd_labels': similarity.svd_dim_labels(int(candle['id']), top_dims=10, top_n_words=1),
             'svd_labels_new': similarity.top_words_by_id[int(candle['id']) - 1]
         }
 
@@ -178,7 +182,6 @@ def candles_search():
 
         results.append(candle_data)
 
-    print(results)
     return json.dumps(results)
 
 if 'DB_NAME' not in os.environ:
