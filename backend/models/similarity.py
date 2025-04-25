@@ -13,7 +13,7 @@ class PandasSim:
     def __init__(self, candles_df, reviews_df):
         self.candles = candles_df
         self.reviews = reviews_df['review_body'].tolist()
-        self.review_idx_to_candle_idx = {i: reviews_df.iloc[i]['candle_id'] for i in range(len(reviews_df))}
+        self.review_idx_to_candle_idx = {i: int(reviews_df.iloc[i]['candle_id']) for i in range(len(reviews_df))}
 
         # TODO: Fix the nltk thingy so that the lemmatizer works
         # self.tfidf_vectorizer = TfidfVectorizer(tokenizer=self.custom_tokenizer, stop_words='english')
@@ -141,26 +141,26 @@ class PandasSim:
         modified_query = self.transform_query_svd(query, self.reviews_words_compressed)
         review_sims_per_review = self.helper_cosine_sim(self.reviews_compressed_normed, modified_query)
         review_df = pd.DataFrame({
-            'candle_id': [self.review_idx_to_candle_idx[i] for i in range(len(review_sims_per_review))],
+            'candle_id': [(self.review_idx_to_candle_idx[i] - 1) for i in range(len(review_sims_per_review))],
             'similarity': review_sims_per_review
         })
         review_sims = review_df.groupby('candle_id')['similarity'].mean().to_dict()
-        print("rev sims", review_sims, len(review_sims))
-        print()
+        # print("rev sims", review_sims, len(review_sims))
+        # print()
 
         # Description similarity 
         modified_query = self.transform_query_svd(query, self.descriptions_words_compressed)
         desc_sims_list = self.helper_cosine_sim(self.descriptions_compressed_normed, modified_query)
         desc_sims = {i: sim for i, sim in enumerate(desc_sims_list)}
-        print("desc sims", desc_sims, len(desc_sims))
+        # print("desc sims", desc_sims, len(desc_sims))
 
         # Name similarity
         name_sims = {}
         query_tokenized = self.generic_tokenizer(query)
-        query_tokenized = self.generic_tokenizer(query)
         for i in range(len(self.candles)):
             cand_name_tokenized = self.generic_tokenizer(self.candles.loc[i, "name"])
             name_sims[i] = self.helper_jaccard_sim(query_tokenized, cand_name_tokenized)
+        # print("name sims", len(name_sims))
 
         combined_sims = {}
         for candle_id in set(review_sims.keys()) | set(desc_sims.keys()) | set(name_sims.keys()):
@@ -190,18 +190,18 @@ class PandasSim:
         modified_query = self.transform_query_svd(query, self.reviews_words_compressed)
         review_sims_per_review = self.helper_cosine_sim(self.reviews_compressed_normed, modified_query)
         review_df = pd.DataFrame({
-            'candle_id': [self.review_idx_to_candle_idx[i] for i in range(len(review_sims_per_review))],
+            'candle_id': [(self.review_idx_to_candle_idx[i] - 1) for i in range(len(review_sims_per_review))],
             'similarity': review_sims_per_review
         })
         review_sims = review_df.groupby('candle_id')['similarity'].mean().to_dict()
-        print("rev sims", review_sims, len(review_sims))
-        print()
+        # print("rev sims", review_sims, len(review_sims))
+        # print()
 
         # Description similarity 
         modified_query = self.transform_query_svd(query, self.descriptions_words_compressed)
         desc_sims_list = self.helper_cosine_sim(self.descriptions_compressed_normed, modified_query)
         desc_sims = {i: sim for i, sim in enumerate(desc_sims_list)}
-        print("desc sims", desc_sims, len(desc_sims))
+        # print("desc sims", desc_sims, len(desc_sims))
 
         # Name similarity
         name_sims = {}

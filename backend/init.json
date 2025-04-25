@@ -4364,7 +4364,12 @@
         "overall_rating": 0,
         "overall_reviewcount": 0,
         "img_url": "images/105.jpg",
-        "reviews": {}
+        "reviews": {
+            "review793": {
+                "review_body": " ",
+                "rating_value": 0
+            }
+        }
     },
     "106": {
         "name": "PASSION",
