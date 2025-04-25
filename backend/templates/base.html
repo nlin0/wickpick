@@ -202,7 +202,7 @@
             answerBox.classList.add("single-result");
           }
 
-          uniqueData.forEach(row => {
+          uniqueData.forEach((row, index) => {
             let tempDiv = document.createElement("div");
             tempDiv.innerHTML = answerBoxTemplate(
               row.name, row.link, row.description, row.overall_rating, row.overall_reviewcount, row.img_url
@@ -217,8 +217,8 @@
                 const neg = label.top_negative.map(n => `${n.word} (${n.value})`).join(", ");
                 const dimDiv = document.createElement("div");
                 dimDiv.innerHTML = `<strong>${label.dimension} (${label.value})</strong>: 
-                <span style="color: green;">[+ ${pos}]</span>
-                <span style="color: crimson;">[- ${neg}]</span>`;
+              <span style="color: green;">[+ ${pos}]</span>
+              <span style="color: crimson;">[- ${neg}]</span>`;
                 svdContainer.appendChild(dimDiv);
               });
 
@@ -232,6 +232,10 @@
             });
 
             document.getElementById("answer-box").appendChild(tempDiv);
+
+            setTimeout(() => {
+              tempDiv.firstElementChild.classList.add("animated");
+            }, index * 450); // 100ms per item
           });
 
           document.getElementById("answer-box").classList.remove("hidden");
