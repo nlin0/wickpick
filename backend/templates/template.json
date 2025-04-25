@@ -1,0 +1,81 @@
+"result1" : {
+
+  "id": "61",
+    "name": "Summit Stargazing",
+    "category": "Floral",
+    "description": "This is a Floral fragrance. Heading back from the slopes, you catch a glimpse of the brilliant Northern Lights, with opalescent fragrances of rainbow berries, winter tuberose, and candied violet leaving you in awe. Top notes: Meyer Lemon, Rainbow Berries, Petitgrain. Middle notes: Winter Tuberose, Wild Jasmine, Iridescent Opal. Base notes: Iced Amber, Candied Violet, Hinoki Wood. Top note is the initial impression of the fragrance, middle note is the main body of the scent and base is its final impression.",
+    "overall_rating": "4.5",
+    "overall_reviewcount": "248",
+    "img_url": "http://localhost:5001/static/candle-images/61.jpg",
+    "link": "https://www.yankeecandle.com/yankee-candle/candles/candle-styles/original-jar-candles/summit-stargazing/ORCL_2652639.html",
+    "reviews": [
+      {
+        "review_body": "It had a very nice scent and burned quite cleanly. I enjoyed it very much.",
+        "rating_value": 5
+    
+  },
+      {
+        "review_body": "This is a wow!   Can't wait to light it.   Such a great smell and a neat color.",
+        "rating_value": 5
+    
+  },
+      {
+        "review_body": "This scent is a bit too florally for me. It\u2019s pleasant enough but I prefer a more fresh and clean scent or even more of a masculine scent. It has a nice scent throw without being over powering. I will probably use this every once in a while when I\u2019m looking to change things up. I wouldn\u2019t purchase this scent for myself a second time.",
+        "rating_value": 3
+    
+  },
+      {
+        "review_body": "The scent is so fresh and nice , love this colour to decoration",
+        "rating_value": 5
+    
+  },
+      {
+        "review_body": "This candle was on sale. I thought I would give it a try. I was pleasantly surprised.",
+        "rating_value": 4
+    
+  },
+      {
+        "review_body": "A beautiful winter floral scent. A nice change from the usual gourmand Christmas scents.",
+        "rating_value": 5
+    
+  },
+      {
+        "review_body": "I purchased this by gut instinct. I just knew it would be a perfect scent for my household and it was on sale. Its a light scent with fresh flowers and clean air. Very soothing aroma. Reminds me of laying in a field of wild flowers. Lost in your thoughts. I need more. Love. Thanks!",
+        "rating_value": 5
+    
+  },
+      {
+        "review_body": "this fragrance is fresh and long lasting. I chose it because I had stargazer lilies for a wedding flower and this candle did not disappoint, the color is the color of the flower and smells fresh and clean.",
+        "rating_value": 5
+    
+  }
+    "sim_score": 0.09931270871997519,
+    "svd_labels_new": [
+      [
+        "scent",
+        0.25235863315971707
+    
+  ],
+      [
+        "nice",
+        0.18555233651195518
+    
+  ],
+      [
+        "winter",
+        0.17992740933947526
+    
+  ],
+      [
+        "floral",
+        0.17533733622266878
+    
+  ],
+      [
+        "flowers",
+        0.16212931109847406
+    
+  ]
+    
+  ]
+}

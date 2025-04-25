@@ -43,7 +43,7 @@
 
 
   <script>
-    function answerBoxTemplate(name, url, desc, rating, numReviews, img_url) {
+    function answerBoxTemplate(name, url, desc, rating, numReviews, img_url, sim_score) {
       return `
         <div class='candle-item'>
           <div class="candle-child-container">
@@ -51,6 +51,7 @@
               <h3 class='candle-name'><a href="${url}" target="_blank" class="candle-link">${name}</a></h3>
               <div class="candle-img-container">
                 <img class="candle-photo" src="${img_url}" alt="${name}">
+                <p class="sim-score">Similarity: ${sim_score.toFixed(3)}</p>
               </div>
             </div>
             
@@ -205,21 +206,17 @@
           uniqueData.forEach((row, index) => {
             let tempDiv = document.createElement("div");
             tempDiv.innerHTML = answerBoxTemplate(
-              row.name, row.link, row.description, row.overall_rating, row.overall_reviewcount, row.img_url
+              row.name, row.link, row.description, row.overall_rating, row.overall_reviewcount, row.img_url, row.sim_score
             );
 
-            if (row.svd_labels && row.svd_labels.length > 0) {
+            if (row.svd_labels_new && row.svd_labels_new.length > 0) {
               const svdContainer = document.createElement("div");
               svdContainer.className = "svd-labels-container";
 
-              row.svd_labels.forEach(label => {
-                const pos = label.top_positive.map(p => `${p.word} (${p.value})`).join(", ");
-                const neg = label.top_negative.map(n => `${n.word} (${n.value})`).join(", ");
-                const dimDiv = document.createElement("div");
-                dimDiv.innerHTML = `<strong>${label.dimension} (${label.value})</strong>: 
-              <span style="color: green;">[+ ${pos}]</span>
-              <span style="color: crimson;">[- ${neg}]</span>`;
-                svdContainer.appendChild(dimDiv);
+              row.svd_labels_new.forEach(([label, value]) => {
+                const labelDiv = document.createElement("div");
+                labelDiv.innerHTML = `${label} ${value.toFixed(3)}`;
+                svdContainer.appendChild(labelDiv);
               });
 
               tempDiv.appendChild(svdContainer);
