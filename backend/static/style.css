@@ -220,8 +220,16 @@ input {
     margin-top: -10%;
 }
 
-.sim_score {
-    
+.sim-score {
+    background-color: rgba(214, 142, 135, 0.633);
+    color: white;
+    padding: 15px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 30px;
+    margin: 0px;
+    margin-top: 16px;
+    margin-bottom: 5px;
 }
 
 .svd-labels-container {
