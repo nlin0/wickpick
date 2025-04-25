@@ -70,9 +70,9 @@
       if (event.key === "Enter") {
         filterText();
 
-        document.getElementById("answer-box").scrollIntoView({
-          behavior: "smooth"
-        });
+        // document.getElementById("answer-box").scrollIntoView({
+        //   behavior: "smooth"
+        // });
       }
     }
 
@@ -157,7 +157,7 @@
         btn.classList.remove('active');
       });
       document.getElementById("answer-box").innerHTML = "";
-      document.getElementById("answer-box").classList.add("hidden");
+      document.getElementById("filters").classList.add("hidden");
     }
 
 
@@ -274,8 +274,8 @@
 
           });
 
-          document.getElementById("answer-box").classList.remove("hidden");
-          document.getElementById("answer-box").scrollIntoView({
+          // document.getElementById("answer-box").classList.remove("hidden");
+          document.getElementById("category-filters").scrollIntoView({
             behavior: "smooth"
           });
         });
