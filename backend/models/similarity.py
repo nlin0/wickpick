@@ -15,8 +15,6 @@ class PandasSim:
         self.reviews = reviews_df['review_body'].tolist()
         self.review_idx_to_candle_idx = {i: int(reviews_df.iloc[i]['candle_id']) for i in range(len(reviews_df))}
 
-        # TODO: Fix the nltk thingy so that the lemmatizer works
-        # self.tfidf_vectorizer = TfidfVectorizer(tokenizer=self.custom_tokenizer, stop_words='english')
         self.tfidf_vectorizer = TfidfVectorizer(stop_words='english', min_df=1, max_df=0.8)
 
         # First fit on all text to establish the vocabulary
@@ -27,15 +25,11 @@ class PandasSim:
         self.tfidf_reviews = self.tfidf_vectorizer.transform([r if r is not None else "" for r in self.reviews]).toarray()
         self.tfidf_description = self.tfidf_vectorizer.transform([r if r is not None else "" for r in self.candles['description']]).toarray()
         self.tfidf_all = self.getTfidfAll()
-        # print("Description shape:", np.shape(self.tfidf_description))
-        # print("All shape:", np.shape(self.tfidf_all))
 
         # Apply SVD to both
         self.reviews_compressed_normed, self.reviews_words_compressed = self.perform_svd(self.tfidf_reviews)
         self.descriptions_compressed_normed, self.descriptions_words_compressed = self.perform_svd(self.tfidf_description)
         self.all_compressed_normed, self.all_words_compressed = self.perform_svd(self.tfidf_all)
-        # print("All compressed normed shape:", np.shape(self.all_compressed_normed))
-        # print("All words compressed shape:", np.shape(self.all_words_compressed))
 
         # Extract vocab
         word_to_index = self.tfidf_vectorizer.vocabulary_
@@ -45,11 +39,6 @@ class PandasSim:
         self.top_words_by_id = {i: self.get_top_n_candle_dimensions(i) for i in range(len(self.candles))}
 
     # HELPER FUNCTIONS
-    # def custom_tokenizer(self, corpus):
-    #     stemmer = WordNetLemmatizer()
-    #     words = re.sub(r"[^A-Za-z0-9\-]", " ", corpus).lower().split()
-    #     return [stemmer.lemmatize(word) for word in words]
-
     def getTfidfAll(self):
         reviews_by_candle = {}
         for review_idx, candle_id in self.review_idx_to_candle_idx.items():
@@ -209,8 +198,6 @@ class PandasSim:
         result_df['sim_score'] = [combined_sims[idx] for idx in sorted_candle_ids]
 
         return result_df
-
-        return self.candles.iloc[sorted_candle_ids]
     
     def retrieve_top_k_candles_svd(self, query, k, w1=0.2, w2=0.4, w3=0.4):
         '''
