@@ -37,9 +37,9 @@ class PandasSim:
         self.tfidf_all = self.getTfidfAll()
 
         # Apply SVD to both (tuning k by manually looking at singular values)
-        self.reviews_compressed_normed, self.reviews_words_compressed = self.perform_svd(self.tfidf_reviews, k=7)
-        self.descriptions_compressed_normed, self.descriptions_words_compressed = self.perform_svd(self.tfidf_description, k=7)
-        self.all_compressed_normed, self.all_words_compressed = self.perform_svd(self.tfidf_all, k=7)
+        self.reviews_compressed_normed, self.reviews_words_compressed = self.perform_svd(self.tfidf_reviews, k=12)
+        self.descriptions_compressed_normed, self.descriptions_words_compressed = self.perform_svd(self.tfidf_description, k=12)
+        self.all_compressed_normed, self.all_words_compressed = self.perform_svd(self.tfidf_all, k=12)
 
         # Extract vocab
         word_to_index = self.tfidf_vectorizer.vocabulary_
@@ -47,6 +47,9 @@ class PandasSim:
         
         # Get top 5 words for each candle
         self.top_words_by_id = {i: self.get_top_n_candle_dimensions(i) for i in range(len(self.candles))}
+
+        # prints each dim's top words + values across corpus
+        self.svd_dim_words_values(self.all_words_compressed)
 
     # HELPER FUNCTIONS
     def getTfidfAll(self):
@@ -90,7 +93,7 @@ class PandasSim:
         return re.sub(r"[^A-Za-z0-9\-]", " ", corpus).lower().split()
 
     # SVD INITIALIZATION HELPERS
-    def perform_svd(self, tfidf_mat, k=20):
+    def perform_svd(self, tfidf_mat, k=12):
         docs_compressed, s, words_compressed_T = svds(tfidf_mat, k=k)
         words_compressed = words_compressed_T.transpose()
         print(f"Singular values: {s}")
@@ -197,8 +200,9 @@ class PandasSim:
             rev_sim = review_sims.get(candle_id, 0)
             desc_sim = desc_sims.get(candle_id, 0)
             name_sim = name_sims.get(candle_id, 0)
-            
+
             w1, w2, w3 = self.get_optimal_weights(name_sim, rev_sim, desc_sim)
+            # w1, w2, w3 = 0.9, 0.6, 0.6
             combined_sims[candle_id] = (w1 * name_sim) + (w2 * rev_sim) + (w3 * desc_sim)
 
         # Pretty print similarities
@@ -254,10 +258,10 @@ class PandasSim:
         
         total = w1 + w2 + w3
         w1, w2, w3 = w1/total, w2/total, w3/total
-        
+
         return (w1, w2, w3)
     
-    def retrieve_top_k_candles_svd(self, query, k, w1=0.2, w2=0.4, w3=0.4):
+    def retrieve_top_k_candles_svd(self, query, k, w1=0.4, w2=0.3, w3=0.3):
         '''
         Returns the top k candles based on a custom similarity score:
         Similarity between a query and a candle is the weighted sum of 
@@ -311,32 +315,77 @@ class PandasSim:
         
         return self.candles.iloc[top_k_ids]
     
-    def svd_dim_labels(self, candle_id, top_dims=10, top_n_words=1):
-        vocab = np.array(self.tfidf_vectorizer.get_feature_names_out())
-        svd_matrix = (self.descriptions_words_compressed + self.reviews_words_compressed) / 2
-        candle_index = self.candles[self.candles['id'] == str(candle_id)].index[0]
-        candle_vector = (self.tfidf_description[candle_index] + self.tfidf_reviews[candle_index]) / 2
+    # def svd_dim_labels(self, candle_id, k=12, top_n_words=1):
+    #     '''
+    #     returns words and each word's associated value of top k svd dimensions for given candle
+    #     '''
+    #     vocab = np.array(self.tfidf_vectorizer.get_feature_names_out())
+    #     svd_matrix = self.all_words_compressed
+    #     candle_svd_vec = self.all_compressed_normed[candle_id]
 
-        candle_svd_vec = np.dot(candle_vector, svd_matrix)
+    #     top_indices = np.argsort(np.abs(candle_svd_vec))[-k:][::-1]
+    #     results = []
 
-        top_indices = np.argsort(np.abs(candle_svd_vec))[-top_dims:][::-1]
+    #     for dim in top_indices:
+    #         top_pos_idx = np.argsort(svd_matrix[:, dim])[-top_n_words:][::-1]
+    #         top_neg_idx = np.argsort(svd_matrix[:, dim])[:top_n_words]
+
+    #         top_pos = [{"word": vocab[i], "value": round(svd_matrix[i, dim], 3)} for i in top_pos_idx]
+    #         top_neg = [{"word": vocab[i], "value": round(svd_matrix[i, dim], 3)} for i in top_neg_idx]
+
+    #         results.append({
+    #             "dimension": f"dim{dim}",
+    #             "value": round(candle_svd_vec[dim], 3),
+    #             "top_positive": top_pos,
+    #             "top_negative": top_neg
+    #         })
+
+    #     return results
+
+    def svd_dim_labels_values(self, candle_id, k=12):
+        '''
+        returns labels and values of top k svd dimensions for given candle
+        '''
+
+        svd_labels = {
+            0: "Fruity & Refreshing",
+            1: "Floral & Fresh",
+            2: "Tropical",
+            3: "Sweet & Comforting",
+            4: "Tropical Fruits",
+            5: "Spicy & Sweet",
+            6: "Cozy & Relaxing",
+            7: "Citrus & Fresh",
+            8: "Festive & Warm",
+            9: "Winter Holiday Spice",
+            10: "Baking Spices & Sweets",
+            11: "Clean & Fresh"
+        }
+
+        candle_svd_vec = self.all_compressed_normed[candle_id]
+        top_indices = np.argsort(np.abs(candle_svd_vec))[-k:][::-1]
+
         results = []
-
         for dim in top_indices:
-            top_pos_idx = np.argsort(svd_matrix[:, dim])[-top_n_words:][::-1]
-            top_neg_idx = np.argsort(svd_matrix[:, dim])[:top_n_words]
-
-            top_pos = [{"word": vocab[i], "value": round(svd_matrix[i, dim], 3)} for i in top_pos_idx]
-            top_neg = [{"word": vocab[i], "value": round(svd_matrix[i, dim], 3)} for i in top_neg_idx]
-
             results.append({
-                "dimension": f"dim{dim}",
-                "value": round(candle_svd_vec[dim], 3),
-                "top_positive": top_pos,
-                "top_negative": top_neg
+                "label": svd_labels.get(dim),
+                "value": round(candle_svd_vec[dim], 3)
             })
 
         return results
+
+    def svd_dim_words_values(self, words_compressed, k=12, top_n_words=18):
+    # prints top_n_words + values for each of the k dimensions. this is across the entire corpus, not per candle
+        for dim in range(k):
+            dim_vector = words_compressed[:, dim]
+            top_word_indices = np.argsort(np.abs(dim_vector))[-top_n_words:][::-1]
+            
+            print(f"dim {dim}:")
+            for i in top_word_indices:
+                if i in self.index_to_word:
+                    word = self.index_to_word[i]
+                    value = dim_vector[i]
+                    print(f"  {word}: {value}")
     
     def get_top_n_candle_dimensions(self, candle_id, n=5):
         """

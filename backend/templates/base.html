@@ -43,6 +43,108 @@
 
 
   <script>
+    function generateSpiderChart(svdLabels, chartElement) {
+      // negative values become 0
+      const cleanedSVDLabels = svdLabels.map(d => ({
+        axis: d.label,
+        value: Math.max(0, d.value)
+      }));
+
+      // clear the chartElement to avoid stacking multiple charts
+      chartElement.selectAll("*").remove();
+
+      const width = 450;
+      const height = 450;
+      const maxValue = d3.max(cleanedSVDLabels, d => d.value);
+      const angleSlice = (Math.PI * 2) / cleanedSVDLabels.length;
+
+      const svg = chartElement
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      const radialLine = d3.lineRadial()
+        .angle((d, i) => i * angleSlice)
+        .radius(d => (d.value / maxValue) * (width / 2 - 40));
+
+      const radarData = cleanedSVDLabels.concat(cleanedSVDLabels[0]);
+
+      svg.append("path")
+        .datum(radarData)
+        .attr("d", radialLine)
+        .attr("fill", "rgba(255, 82, 32, 0.8)")
+        .attr("stroke", "#F74A27")
+        .attr("stroke-width", 2)
+        .attr("transform", `translate(${width / 2}, ${height / 2})`);
+
+      // axes and dashes
+      const dashCount = 5;
+      for (let j = 1; j <= dashCount; j++) {
+        const radius = (j / dashCount) * (width / 2 - 40);
+        svg.append("circle")
+          .attr("cx", width / 2)
+          .attr("cy", height / 2)
+          .attr("r", radius)
+          .attr("fill", "none")
+          .attr("stroke", "#821010")
+          .attr("stroke-dasharray", "4, 2");
+      }
+
+      // axes and labels
+      cleanedSVDLabels.forEach((d, i) => {
+        const angle = angleSlice * i;
+        svg.append("line")
+          .attr("x1", width / 2)
+          .attr("y1", height / 2)
+          .attr("x2", (width / 2) + (Math.cos(angle - Math.PI / 2) * (width / 2 - 40)))
+          .attr("y2", (height / 2) + (Math.sin(angle - Math.PI / 2) * (height / 2 - 40)))
+          .attr("stroke", "#821010");
+
+        svg.append("text")
+          .attr("x", (width / 2) + (Math.cos(angle - Math.PI / 2) * (width / 2 - 30)))
+          .attr("y", (height / 2) + (Math.sin(angle - Math.PI / 2) * (height / 2 - 30)))
+          .text(d.axis)
+          .attr("font-size", "12px")
+          .attr("text-anchor", "middle");
+
+        const pointX = (width / 2) + (Math.cos(angle - Math.PI / 2) * (d.value / maxValue) * (width / 2 - 40));
+        const pointY = (height / 2) + (Math.sin(angle - Math.PI / 2) * (d.value / maxValue) * (height / 2 - 40));
+
+        svg.append("circle")
+          .attr("cx", pointX)
+          .attr("cy", pointY)
+          .attr("r", 5)
+          .attr("fill", "#D53141")
+          .on("mouseover", function (event) {
+            d3.select("#tooltip")
+              .style("visibility", "visible")
+              .html(`${d.axis}: ${d.value}`)
+              .style("left", (event.pageX + 5) + "px")
+              .style("top", (event.pageY - 28) + "px");
+          })
+          .on("mousemove", function (event) {
+            d3.select("#tooltip")
+              .style("left", (event.pageX + 5) + "px")
+          })
+          .on("mouseout", function () {
+            d3.select("#tooltip")
+              .style("visibility", "hidden");
+          });
+      });
+
+      // Tooltip
+      const tooltip = d3.select("body").append("div")
+        .attr("id", "tooltip")
+        .style("position", "absolute")
+        .style("visibility", "hidden")
+        .style("background-color", "#fff")
+        .style("padding", "5px")
+        .style("border-radius", "3px")
+        .style("box-shadow", "0px 0px 10px rgba(0, 0, 0, 0.1)")
+        .style("font-size", "12px")
+        .style("color", "#333")
+        .style("z-index", "10000");;
+    }
 
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -309,6 +411,18 @@
                 </div>
                 <div class="popup-content">
                 </div>
+                  <div class="svd-labels">
+                    <h4>SVD Dimensions:</h4>
+                    <div class="svd-labels-container">
+                      ${row.svd_dim_labels_values.map(labelData => `
+                        <div class="svd-label-list">
+                          <span class="svd-label-text">${labelData.label}: </span>
+                          <span class="svd-label-value">${labelData.value.toFixed(3)}</span>
+                        </div>
+                      `).join('')}
+                    </div>
+                    <div id="spider-chart"></div>
+                  </div>
 
                   <div class="top-feats">
                 
@@ -336,6 +450,9 @@
                 </div>
               `;
             document.body.appendChild(popup);
+
+            const chartElement = d3.select(`#popup-${row.id}`).select("#spider-chart");
+            generateSpiderChart(row.svd_dim_labels_values, chartElement);
 
             tempDiv.querySelector(".more-info").addEventListener("click", () => {
               tempDiv.firstElementChild.classList.toggle("expanded");
