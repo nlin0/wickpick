@@ -49,7 +49,7 @@ class PandasSim:
         self.top_words_by_id = {i: self.get_top_n_candle_dimensions(i) for i in range(len(self.candles))}
 
         # prints each dim's top words + values across corpus
-        self.svd_dim_words_values(self.all_words_compressed)
+        # self.svd_dim_words_values(self.all_words_compressed)
 
     # HELPER FUNCTIONS
     def getTfidfAll(self):
