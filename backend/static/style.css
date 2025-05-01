@@ -233,6 +233,7 @@ input {
     margin: 0px;
     margin-top: 16px;
     margin-bottom: 5px;
+    font-family: 'Montserrat', sans-serif;
 }
 
 
@@ -283,7 +284,6 @@ input {
 }
 
 .card-back-title {
-
     font-family: 'Kanit', sans-serif;
     font-size: 20px;
     margin-bottom: 15px;
@@ -454,12 +454,14 @@ input {
 .popup-title {
     text-align: center;
     color: rgba(134, 28, 28, 0.511);
+    font-family: 'Kanit', sans-serif;
 }
 
-.popup-content {
-    padding: 10px;
+/* .popup-content {
+    display: flex;
+    flex-direction: column;
     font-size: 0.9rem;
-}
+} */
 
 .popup-close {
     background: none;
@@ -486,8 +488,25 @@ input {
     margin-bottom: 18px;
 }
 
+.checkboxes {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
+}
+
+.checkbox {
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    background-color: rgb(223, 126, 126);
+    border-radius: 15px;
+    padding: 5px;
+    padding-left: 10px;
+    padding-right: 14px;
+}
+
 .top-feats {
-    padding: 10px;
     margin: 5px;
 }
 
@@ -496,6 +515,7 @@ input {
     flex-wrap: wrap;
     width: 100%;
     justify-content: center;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .rev-desc {
@@ -506,6 +526,8 @@ input {
     background-color: rgb(223, 126, 126);
     color: white;
     padding: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
     border-radius: 15px;
     font-size: 12px;
     margin: 2px;
@@ -518,16 +540,17 @@ input {
 }
 
 .rev-item {
-    margin-bottom: 10px;
+    margin-bottom: 20px;
 }
 
 .review-box {
+    font-family: 'Montserrat', sans-serif;
     margin-top: -10px;
     background-color: #fffefe;
     padding: 15px;
     border-radius: 8px;
     font-size: 14px;
-    max-width: 300px;
+    max-width: 100%;
     word-wrap: break-word;
     color: rgba(132, 12, 12, 0.587);
     box-shadow: 0 2px 5px rgba(61, 10, 10, 0.392);
@@ -537,5 +560,13 @@ input {
 
 .pop-descr {
     color: rgba(132, 12, 12, 0.587);
+    font-family: 'Montserrat', sans-serif;
+}
 
+h4 {
+    color: rgba(132, 12, 12, 0.587);
+    font-family: 'Kanit', sans-serif;
+    font-weight: bold;
+    font-size: 20px;
+    margin-top: 5px;
 }
