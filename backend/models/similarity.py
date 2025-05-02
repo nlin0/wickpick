@@ -48,6 +48,9 @@ class PandasSim:
         # Get top 5 words for each candle
         self.top_words_by_id = {i: self.get_top_n_candle_dimensions(i) for i in range(len(self.candles))}
 
+        # Get top 3 similar candles for each candle
+        self.similar_candles_by_id = {i: self.find_n_similar_candles(i, n=3) for i in range(len(self.candles))}
+
         # prints each dim's top words + values across corpus
         # self.svd_dim_words_values(self.all_words_compressed)
 
