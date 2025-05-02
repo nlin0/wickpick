@@ -37,7 +37,8 @@ with open(json_file_path, 'r') as file:
             'overall_rating': candle['overall_rating'],
             'overall_reviewcount': candle['overall_reviewcount'],
             'link': candle['link'],
-            'img_url': candle['img_url']
+            'img_url': candle['img_url'],
+            'liked': "1" if (candle['name'] == "Beach Walk®") or (candle['name'] == "Salted Caramel") else "0"
         }
         candles_data.append(candle_info)
         
@@ -124,12 +125,12 @@ def candles_search():
 
     # Integrated Rocchio (only perform Rocchio if there is atleast some similarity)
     sim_df = similarity.retrieve_sorted_candles_svd(query)
-    max_sim_score = sim_df['sim_score'].max() if not sim_df.empty else 0
-    if (max_sim_score < 0.15 and max_sim_score > 0):
-        query = similarity.get_query_suggestions(similarity.rocchio(query), num_terms=10)
-        # print(max_sim_score)
-        # print(query)
-        sim_df = similarity.retrieve_sorted_candles_svd(query)
+    # max_sim_score = sim_df['sim_score'].max() if not sim_df.empty else 0
+    # if (max_sim_score < 0.15 and max_sim_score > 0):
+    # print("Rocchio running:")
+    # query = similarity.get_query_suggestions(similarity.rocchio(query), num_terms=30)
+
+    # sim_df = similarity.retrieve_sorted_candles_svd(query, use_rocchio=True)
 
     merged_df = pd.merge(sim_df, reviews_df, left_on='id', right_on='candle_id', how='inner')
     merged_df['img_url'] = request.url_root + 'static/candle-' + merged_df['img_url']
@@ -166,8 +167,30 @@ def candles_search():
             })
 
         results.append(candle_data)
-    print(json.dumps(results[0], indent=2))
+    # print(json.dumps(results[0], indent=2))
     return json.dumps(results)
+
+# @app.route("/candles/<candle_id>/like", methods=['POST'])
+# def like_candle(candle_id):
+#     # Get user info from request (you might want to add authentication)
+#     user_data = request.get_json()
+    
+#     # Here you would typically:
+#     # 1. Validate the candle_id exists
+#     # 2. Store the like in a database
+#     # 3. Update any relevant metrics
+    
+#     if candle_id not in candles_df['id'].values:
+#         return {"error": "Candle not found"}, 404
+
+#     # Placeholder response - modify based on your needs
+#     response = {
+#         "status": "success",
+#         "message": f"Candle {candle_id} liked successfully",
+#         "candle_id": candle_id
+#     }
+    
+#     return json.dumps(response), 200
 
 if 'DB_NAME' not in os.environ:
     app.run(debug=True, host="0.0.0.0", port=5001)

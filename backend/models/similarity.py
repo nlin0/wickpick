@@ -14,6 +14,8 @@ class PandasSim:
         self.reviews = reviews_df['review_body'].tolist()
         self.review_idx_to_candle_idx = {i: int(reviews_df.iloc[i]['candle_id']) for i in range(len(reviews_df))}
 
+        self.liked = [0 for _ in range(len(self.candles))]
+
         my_stop_words = [
             "scent", "notes", "note", "nice", "love", "favorite", "smells", "like", "fragrance", "time",
             "base", "top", "mid", "middle", "one", "two", "three", "oz", "ounce", "inch", "inches",
@@ -44,7 +46,7 @@ class PandasSim:
         # Extract vocab
         word_to_index = self.tfidf_vectorizer.vocabulary_
         self.index_to_word = {i:t for t,i in word_to_index.items()}
-        
+
         # Get top 5 words for each candle
         self.top_words_by_id = {i: self.get_top_n_candle_dimensions(i) for i in range(len(self.candles))}
 
@@ -99,7 +101,7 @@ class PandasSim:
     def perform_svd(self, tfidf_mat, k=12):
         docs_compressed, s, words_compressed_T = svds(tfidf_mat, k=k)
         words_compressed = words_compressed_T.transpose()
-        print(f"Singular values: {s}")
+        # print(f"Singular values: {s}")
         return normalize(docs_compressed), words_compressed
     
     # GENERIC SIMILARITY FUNCTION
@@ -161,7 +163,7 @@ class PandasSim:
         return cosine_sim
 
     # SVD STUFF
-    def retrieve_sorted_candles_svd(self, query):
+    def retrieve_sorted_candles_svd(self, query, use_rocchio=False):
         '''
         Returns candles sorted based on a custom similarity score:
         Similarity between a query and a candle is the weighted sum of 
@@ -176,6 +178,8 @@ class PandasSim:
 
         # Review similarity
         modified_query = self.transform_query_svd(query, self.reviews_words_compressed)
+        if use_rocchio:
+            modified_query = self.rocchio(modified_query, self.reviews_words_compressed)
         # review_sims_per_review = self.helper_cosine_sim(self.reviews_compressed_normed, modified_query)
         review_sims_per_review = self.reviews_compressed_normed.dot(modified_query)
         review_df = pd.DataFrame({
@@ -184,8 +188,10 @@ class PandasSim:
         })
         review_sims = review_df.groupby('candle_id')['similarity'].mean().to_dict()
 
-        # Description similarity 
+        # Description similarity
         modified_query = self.transform_query_svd(query, self.descriptions_words_compressed)
+        # if use_rocchio:
+        #     modified_query = self.rocchio(modified_query, self.descriptions_words_compressed)
         # desc_sims_list = self.helper_cosine_sim(self.descriptions_compressed_normed, modified_query)
         desc_sims_list = self.descriptions_compressed_normed.dot(modified_query)
         desc_sims = {i: sim for i, sim in enumerate(desc_sims_list)}
@@ -264,59 +270,59 @@ class PandasSim:
 
         return (w1, w2, w3)
     
-    def retrieve_top_k_candles_svd(self, query, k, w1=0.4, w2=0.3, w3=0.3):
-        '''
-        Returns the top k candles based on a custom similarity score:
-        Similarity between a query and a candle is the weighted sum of 
-        the cosine similarity between the query and the reviews, the
-        cos sim between the query and the description, and the jaccard
-        sim between the query and the candle name.
+    # def retrieve_top_k_candles_svd(self, query, k, w1=0.4, w2=0.3, w3=0.3):
+    #     '''
+    #     Returns the top k candles based on a custom similarity score:
+    #     Similarity between a query and a candle is the weighted sum of 
+    #     the cosine similarity between the query and the reviews, the
+    #     cos sim between the query and the description, and the jaccard
+    #     sim between the query and the candle name.
 
-        If the query does not yield good distribution (i.e. highest and 
-        lowest are not diff enough), then perform rocchio and redo?
-        '''
-        # print("count of all candles:", len(self.candles))
+    #     If the query does not yield good distribution (i.e. highest and 
+    #     lowest are not diff enough), then perform rocchio and redo?
+    #     '''
+    #     # print("count of all candles:", len(self.candles))
 
-        # Review similarity
-        modified_query = self.transform_query_svd(query, self.reviews_words_compressed)
-        # review_sims_per_review = self.helper_cosine_sim(self.reviews_compressed_normed, modified_query)
-        review_sims_per_review = self.reviews_compressed_normed.dot(modified_query)
-        review_df = pd.DataFrame({
-            'candle_id': [(self.review_idx_to_candle_idx[i] - 1) for i in range(len(review_sims_per_review))],
-            'similarity': review_sims_per_review
-        })
-        review_sims = review_df.groupby('candle_id')['similarity'].mean().to_dict()
-        # print("rev sims", review_sims, len(review_sims))
-        # print()
+    #     # Review similarity
+    #     modified_query = self.transform_query_svd(query, self.reviews_words_compressed)
+    #     # review_sims_per_review = self.helper_cosine_sim(self.reviews_compressed_normed, modified_query)
+    #     review_sims_per_review = self.reviews_compressed_normed.dot(modified_query)
+    #     review_df = pd.DataFrame({
+    #         'candle_id': [(self.review_idx_to_candle_idx[i] - 1) for i in range(len(review_sims_per_review))],
+    #         'similarity': review_sims_per_review
+    #     })
+    #     review_sims = review_df.groupby('candle_id')['similarity'].mean().to_dict()
+    #     # print("rev sims", review_sims, len(review_sims))
+    #     # print()
 
-        # Description similarity 
-        modified_query = self.transform_query_svd(query, self.descriptions_words_compressed)
-        # desc_sims_list = self.helper_cosine_sim(self.descriptions_compressed_normed, modified_query)
-        desc_sims_list = self.descriptions_compressed_normed.dot(modified_query)
-        desc_sims = {i: sim for i, sim in enumerate(desc_sims_list)}
-        # print("desc sims", desc_sims, len(desc_sims))
+    #     # Description similarity 
+    #     modified_query = self.transform_query_svd(query, self.descriptions_words_compressed)
+    #     # desc_sims_list = self.helper_cosine_sim(self.descriptions_compressed_normed, modified_query)
+    #     desc_sims_list = self.descriptions_compressed_normed.dot(modified_query)
+    #     desc_sims = {i: sim for i, sim in enumerate(desc_sims_list)}
+    #     # print("desc sims", desc_sims, len(desc_sims))
 
-        # Name similarity
-        name_sims = {}
-        query_tokenized = self.generic_tokenizer(query)
-        query_tokenized = self.generic_tokenizer(query)
-        for i in range(len(self.candles)):
-            cand_name_tokenized = self.generic_tokenizer(self.candles.loc[i, "name"])
-            name_sims[i] = self.helper_jaccard_sim(query_tokenized, cand_name_tokenized)
+    #     # Name similarity
+    #     name_sims = {}
+    #     query_tokenized = self.generic_tokenizer(query)
+    #     query_tokenized = self.generic_tokenizer(query)
+    #     for i in range(len(self.candles)):
+    #         cand_name_tokenized = self.generic_tokenizer(self.candles.loc[i, "name"])
+    #         name_sims[i] = self.helper_jaccard_sim(query_tokenized, cand_name_tokenized)
 
-        combined_sims = {}
-        for candle_id in set(review_sims.keys()) | set(desc_sims.keys()) | set(name_sims.keys()):
-            rev_sim = review_sims.get(candle_id, 0)
-            desc_sim = desc_sims.get(candle_id, 0)
-            name_sim = name_sims.get(candle_id, 0)
-            combined_sims[candle_id] = (w1 * name_sim) + (w2 * rev_sim) + (w3 * desc_sim)
+    #     combined_sims = {}
+    #     for candle_id in set(review_sims.keys()) | set(desc_sims.keys()) | set(name_sims.keys()):
+    #         rev_sim = review_sims.get(candle_id, 0)
+    #         desc_sim = desc_sims.get(candle_id, 0)
+    #         name_sim = name_sims.get(candle_id, 0)
+    #         combined_sims[candle_id] = (w1 * name_sim) + (w2 * rev_sim) + (w3 * desc_sim)
         
-        sorted_candle_ids = sorted(combined_sims.keys(), key=lambda cid: combined_sims[cid], reverse=True)
+    #     sorted_candle_ids = sorted(combined_sims.keys(), key=lambda cid: combined_sims[cid], reverse=True)
         
-        # Return top k unique candles
-        top_k_ids = sorted_candle_ids[:k]
+    #     # Return top k unique candles
+    #     top_k_ids = sorted_candle_ids[:k]
         
-        return self.candles.iloc[top_k_ids]
+    #     return self.candles.iloc[top_k_ids]
     
     # def svd_dim_labels(self, candle_id, k=12, top_n_words=1):
     #     '''
@@ -407,116 +413,126 @@ class PandasSim:
         return [(self.index_to_word[i], sims[i]) for i in asort]
 
     # NO SVD BAD BAD
-    def retrieve_top_k_candles(self, query, k, w1=0.4, w2=0.2, w3=0.2):
-        '''
-        Returns the top k candles based on a custom similarity score:
-        Similarity between a query and a candle is the weighted sum of 
-        the cosine similarity between the query and the reviews, the
-        cos sim between the query and the description, and the jaccard
-        sim between the query and the candle name.
+    # def retrieve_top_k_candles(self, query, k, w1=0.4, w2=0.2, w3=0.2):
+    #     '''
+    #     Returns the top k candles based on a custom similarity score:
+    #     Similarity between a query and a candle is the weighted sum of 
+    #     the cosine similarity between the query and the reviews, the
+    #     cos sim between the query and the description, and the jaccard
+    #     sim between the query and the candle name.
 
-        If the query does not yield good distribution (i.e. highest and
-        lowest are not diff enough), then perform rocchio and redo?
-        '''
-        review_sims = {}
-        for i in range(len(self.reviews)):
-            candle_id = self.review_idx_to_candle_idx[i]
-            sim = self.cosine_sim_query_candles(query, i)
-            if candle_id in review_sims:
-                review_sims[candle_id] = max(review_sims[candle_id], sim)
-            else:
-                review_sims[candle_id] = sim
+    #     If the query does not yield good distribution (i.e. highest and
+    #     lowest are not diff enough), then perform rocchio and redo?
+    #     '''
+    #     review_sims = {}
+    #     for i in range(len(self.reviews)):
+    #         candle_id = self.review_idx_to_candle_idx[i]
+    #         sim = self.cosine_sim_query_candles(query, i)
+    #         if candle_id in review_sims:
+    #             review_sims[candle_id] = max(review_sims[candle_id], sim)
+    #         else:
+    #             review_sims[candle_id] = sim
         
-        desc_sims = {}
-        for i in range(len(self.candles)):
-            candle_id = i  
-            desc_sim = self.helper_cosine_sim(self.tfidf_description[i], self.transform_query(query))
-            desc_sims[candle_id] = desc_sim
+    #     desc_sims = {}
+    #     for i in range(len(self.candles)):
+    #         candle_id = i  
+    #         desc_sim = self.helper_cosine_sim(self.tfidf_description[i], self.transform_query(query))
+    #         desc_sims[candle_id] = desc_sim
 
-        name_sims = {}
-        query_tokenized = self.generic_tokenizer(query)
-        for i in range(len(self.candles)):
-            # print(self.candles.loc[candle_id, 'name'], i)
-            cand_name_tokenized = self.generic_tokenizer(self.candles.loc[i, 'name'])
-            name_sims[i] = self.helper_jaccard_sim(query_tokenized, cand_name_tokenized)
+    #     name_sims = {}
+    #     query_tokenized = self.generic_tokenizer(query)
+    #     for i in range(len(self.candles)):
+    #         # print(self.candles.loc[candle_id, 'name'], i)
+    #         cand_name_tokenized = self.generic_tokenizer(self.candles.loc[i, 'name'])
+    #         name_sims[i] = self.helper_jaccard_sim(query_tokenized, cand_name_tokenized)
         
-        combined_sims = {}
-        for candle_id in set(review_sims.keys()) | set(desc_sims.keys()) | set(name_sims.keys()):
-            rev_sim = review_sims.get(candle_id, 0)
-            desc_sim = desc_sims.get(candle_id, 0)
-            name_sim = name_sims.get(candle_id, 0)
-            combined_sims[candle_id] = (w1 * name_sim) + (w2 * rev_sim) + (w3 * desc_sim)
+    #     combined_sims = {}
+    #     for candle_id in set(review_sims.keys()) | set(desc_sims.keys()) | set(name_sims.keys()):
+    #         rev_sim = review_sims.get(candle_id, 0)
+    #         desc_sim = desc_sims.get(candle_id, 0)
+    #         name_sim = name_sims.get(candle_id, 0)
+    #         combined_sims[candle_id] = (w1 * name_sim) + (w2 * rev_sim) + (w3 * desc_sim)
         
-        sorted_candle_ids = sorted(combined_sims.keys(), key=lambda cid: combined_sims[cid], reverse=True)
-        sorted_combined_sims = sorted(combined_sims.items(), key=lambda item: item[1], reverse=True)
+    #     sorted_candle_ids = sorted(combined_sims.keys(), key=lambda cid: combined_sims[cid], reverse=True)
+    #     sorted_combined_sims = sorted(combined_sims.items(), key=lambda item: item[1], reverse=True)
 
         
-        # Return top k unique candles
-        top_k_ids = sorted_candle_ids[:k]
-        top_k_sims = sorted_combined_sims[:k]
-        # print(top_k_sims)
+    #     # Return top k unique candles
+    #     top_k_ids = sorted_candle_ids[:k]
+    #     top_k_sims = sorted_combined_sims[:k]
+    #     # print(top_k_sims)
         
-        return self.candles.iloc[top_k_ids]
+    #     return self.candles.iloc[top_k_ids]
 
-    def retrieve_bottom_k_candles(self,query,k):
-        review_sims = {}
-        for i in range(len(self.reviews)):
-            candle_id = self.review_idx_to_candle_idx[i]
-            sim = self.cosine_sim_query_candles(query, i)
-            if candle_id in review_sims:
-                review_sims[candle_id] = max(review_sims[candle_id], sim)
-            else:
-                review_sims[candle_id] = sim
+    # def retrieve_bottom_k_candles(self,query,k):
+    #     review_sims = {}
+    #     for i in range(len(self.reviews)):
+    #         candle_id = self.review_idx_to_candle_idx[i]
+    #         sim = self.cosine_sim_query_candles(query, i)
+    #         if candle_id in review_sims:
+    #             review_sims[candle_id] = max(review_sims[candle_id], sim)
+    #         else:
+    #             review_sims[candle_id] = sim
         
-        desc_sims = {}
-        for i in range(len(self.candles)):
-            candle_id = i  
-            desc_sim = self.helper_cosine_sim(self.tfidf_description[i], self.transform_query(query))
-            desc_sims[candle_id] = desc_sim
-        
-        combined_sims = {}
-        for candle_id in set(review_sims.keys()) | set(desc_sims.keys()):
-            rev_sim = review_sims.get(candle_id, 0)
-            desc_sim = desc_sims.get(candle_id, 0)
-            combined_sims[candle_id] = 0.5 * rev_sim + 0.5 * desc_sim
-        
-        sorted_candle_ids = sorted(combined_sims.keys(), key=lambda cid: combined_sims[cid], reverse=False)
+    #     desc_sims = {}
+    #     for i in range(len(self.candles)):
+    #         candle_id = i  
+    #         desc_sim = self.helper_cosine_sim(self.tfidf_description[i], self.transform_query(query))
+    #         desc_sims[candle_id] = desc_sim
 
-        top_k_ids = sorted_candle_ids[:k]
-        
-        return self.candles.iloc[top_k_ids]
+    #     combined_sims = {}
+    #     for candle_id in set(review_sims.keys()) | set(desc_sims.keys()):
+    #         rev_sim = review_sims.get(candle_id, 0)
+    #         desc_sim = desc_sims.get(candle_id, 0)
+    #         combined_sims[candle_id] = 0.5 * rev_sim + 0.5 * desc_sim
 
-    
-    def rocchio(self, query, alpha = 1, beta = 0.75, gamma = 0.15):
+    #     sorted_candle_ids = sorted(combined_sims.keys(), key=lambda cid: combined_sims[cid], reverse=False)
+
+    #     top_k_ids = sorted_candle_ids[:k]
+
+    #     return self.candles.iloc[top_k_ids]
+
+    def rocchio(self, query, compressed_mat, alpha = 1, beta = 1, gamma = 0.45):
+        print("------------------------------------------------------------------------")
         query_vec = self.transform_query(query) if isinstance(query, str) else query
-    
-        relevant_candles = self.retrieve_top_k_candles(query, 10)
+        # self.liked
+        relevant_candles = self.candles[self.candles['liked'] == "1"]
+        print(relevant_candles)
         relevant_ids = relevant_candles.index.tolist()
         
-        irrelevant_candles = self.retrieve_bottom_k_candles(query, 10)
+        irrelevant_candles = self.candles[self.candles['liked'] == "0"]
+        print(irrelevant_candles)
         irrelevant_ids = irrelevant_candles.index.tolist()
         
         #relevant centroid
         if relevant_ids:
             relevant_vecs = []
             for candle_id in relevant_ids:
-                relevant_vecs.append(self.tfidf_description[candle_id])
+                print(compressed_mat[candle_id])
+                relevant_vecs.append(compressed_mat[candle_id])
+
+            # print(relevant_vecs)
             
             relevant_centroid = np.mean(relevant_vecs, axis=0) if relevant_vecs else np.zeros_like(query_vec)
         else:
             relevant_centroid = np.zeros_like(query_vec)
-        
+
+        print(relevant_centroid)
+
         # irrelevant centroid
         if irrelevant_ids:
             irrelevant_vecs = []
             for candle_id in irrelevant_ids:
-                irrelevant_vecs.append(self.tfidf_description[candle_id])
-            
+                irrelevant_vecs.append(compressed_mat[candle_id])
+
             irrelevant_centroid = np.mean(irrelevant_vecs, axis=0) if irrelevant_vecs else np.zeros_like(query_vec)
         else:
             irrelevant_centroid = np.zeros_like(query_vec)
+
+        print(irrelevant_centroid)
         
         modified_query_vec = alpha * query_vec + beta * relevant_centroid - gamma * irrelevant_centroid
+        print("------------------------------------------------------------------------")
         return modified_query_vec
     
     def get_query_suggestions(self, modified_query_vec, num_terms=5):
