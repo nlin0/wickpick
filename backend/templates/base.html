@@ -218,6 +218,10 @@
           .attr("height", 100)
           .attr("class", "sim-candle-image");
 
+        candleElement.append("text")
+          .text(`${(d.score * 100).toFixed(1)}% similar`)
+          .attr("class", "sim-score-lite");
+
         candleElement.append("button")
           .text("View Details")
           .attr("class", "view-details-button")
@@ -516,7 +520,7 @@
                 
                   <h4>Relevant Tags</h4>
                   <div class="tag-list">
-                    ${row.svd_labels_new.map(([label, value]) => `<p class="label-svd">${label}:\n${value.toFixed(3)}</p>`).join("")}
+                    ${row.svd_labels_new.map(([label, value]) => `<p class="label-svd">${label}: ${(value*100).toFixed(1)}%</p>`).join("")}
                   </div>
 
                   <p class="pop-descr">

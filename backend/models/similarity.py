@@ -376,7 +376,7 @@ class PandasSim:
         for dim in top_indices:
             results.append({
                 "label": svd_labels.get(dim),
-                "value": round(candle_svd_vec[dim], 3)
+                "value": round(abs(candle_svd_vec[dim]), 3)
             })
 
         return results
