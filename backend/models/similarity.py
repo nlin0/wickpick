@@ -412,7 +412,7 @@ class PandasSim:
         cos sim between the query and the description, and the jaccard
         sim between the query and the candle name.
 
-        If the query does not yield good distribution (i.e. highest and 
+        If the query does not yield good distribution (i.e. highest and
         lowest are not diff enough), then perform rocchio and redo?
         '''
         review_sims = {}
@@ -521,3 +521,11 @@ class PandasSim:
         top_indices = modified_query_vec.argsort()[-num_terms:][::-1]
         top_terms = feature_names[top_indices]
         return " ".join(top_terms)
+    
+    def find_n_similar_candles(self, candle_id, n=5):
+        candle_name = self.candles.loc[candle_id, 'name']
+        print(candle_name)
+        candle_svd_vec = self.all_compressed_normed[candle_id]
+        ranked_candles = self.all_compressed_normed.dot(candle_svd_vec)
+        asort = np.argsort(-ranked_candles)
+        return [(self.candles.loc[i, 'name'], ranked_candles[i]) for i in asort if self.candles.loc[i, 'name'] != candle_name][:n]

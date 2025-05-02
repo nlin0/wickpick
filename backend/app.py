@@ -61,6 +61,9 @@ CORS(app)
 # singletons
 similarity = PandasSim(candles_df, reviews_df)
 
+# TEST
+# print(similarity.find_n_similar_candles(0))
+
 # helper functions
 def json_search(query):
     matches = []
