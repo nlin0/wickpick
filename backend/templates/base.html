@@ -203,26 +203,28 @@
 
     function generateSimilarCandles(similarCandles, chartElement) {
       similarCandles.forEach(d => {
-        const candleElement = chartElement.append("div").attr("class", "similar-candle");
+        const candleElement = chartElement.append("div").attr("class", "similar-candles");
 
         candleElement.append("text")
-          .text(d.name);
+          .text(d.name)
+          .attr("class", "sim-candle-name");
 
         console.log(d.img_url)
 
         candleElement.append("img")
           .attr("src", "/static/candle-" + d.img_url)
-          .attr("width", 50)
-          .attr("height", 50);
+          .attr("width", 100)
+          .attr("height", 100)
+          .attr("class", "sim-candle-image");
 
         candleElement.append("button")
           .text("View Details")
+          .attr("class", "view-details-button")
           .on("click", () => {
             const similarPopup = document.getElementById(`popup-${d.id}`);
             if (similarPopup) {
               similarPopup.style.display = "block";
               makeDraggable(similarPopup);
-              popup.style.display = "none";
             }
           });
       });
@@ -535,7 +537,7 @@
                       </ul>
                   <div class="sim-candles">
                     <h4>Candles Similar to This</h4>
-                    <div id="sim-candles"></div>
+                    <div id="sim-candles-list"></div>
                   </div>
                 </div>
               `;
@@ -572,7 +574,7 @@
             updateChart(); // intiial display
 
             // similar candles
-            const similarCandles = d3.select(`#popup-${row.id}`).select("#sim-candles");
+            const similarCandles = d3.select(`#popup-${row.id}`).select("#sim-candles-list");
 
             generateSimilarCandles(row.similar_candles, similarCandles);
 
