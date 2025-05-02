@@ -546,6 +546,9 @@ class PandasSim:
         candle_svd_vec = self.all_compressed_normed[candle_id]
         ranked_candles = self.all_compressed_normed.dot(candle_svd_vec)
         asort = np.argsort(-ranked_candles)
+        # Filter out duplicates by name
+        seen_names = {candle_name}  # Start with current candle name
+        asort = [i for i in asort if self.candles.loc[i, 'name'] not in seen_names and not seen_names.add(self.candles.loc[i, 'name'])]
         return [{
             'id': str(i + 1),
             'name': self.candles.loc[i, 'name'],

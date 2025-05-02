@@ -202,6 +202,7 @@
     }
 
     function generateSimilarCandles(similarCandles, chartElement) {
+      chartElement.selectAll("*").remove();
       similarCandles.forEach(d => {
         const candleElement = chartElement.append("div").attr("class", "similar-candles");
 
@@ -577,6 +578,7 @@
             const similarCandles = d3.select(`#popup-${row.id}`).select("#sim-candles-list");
 
             generateSimilarCandles(row.similar_candles, similarCandles);
+            console.log(row.similar_candles)
 
 
             tempDiv.querySelector(".more-info").addEventListener("click", () => {
