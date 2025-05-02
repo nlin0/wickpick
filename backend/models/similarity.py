@@ -531,7 +531,7 @@ class PandasSim:
         ranked_candles = self.all_compressed_normed.dot(candle_svd_vec)
         asort = np.argsort(-ranked_candles)
         return [{
-            'id': i + 1,
+            'id': str(i + 1),
             'name': self.candles.loc[i, 'name'],
             'score': ranked_candles[i]
             } for i in asort if self.candles.loc[i, 'name'] != candle_name][:n]
