@@ -527,7 +527,6 @@ class PandasSim:
     
     def find_n_similar_candles(self, candle_id, n=3):
         candle_name = self.candles.loc[candle_id, 'name']
-        print(candle_name)
         candle_svd_vec = self.all_compressed_normed[candle_id]
         ranked_candles = self.all_compressed_normed.dot(candle_svd_vec)
         asort = np.argsort(-ranked_candles)
