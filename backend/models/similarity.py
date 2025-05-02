@@ -530,4 +530,8 @@ class PandasSim:
         candle_svd_vec = self.all_compressed_normed[candle_id]
         ranked_candles = self.all_compressed_normed.dot(candle_svd_vec)
         asort = np.argsort(-ranked_candles)
-        return [{'name': self.candles.loc[i, 'name'], 'score': ranked_candles[i]} for i in asort if self.candles.loc[i, 'name'] != candle_name][:n]
+        return [{
+            'id': i + 1,
+            'name': self.candles.loc[i, 'name'],
+            'score': ranked_candles[i]
+            } for i in asort if self.candles.loc[i, 'name'] != candle_name][:n]

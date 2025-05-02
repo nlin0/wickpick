@@ -139,7 +139,7 @@ def candles_search():
 
     unique_candles = merged_df[['id', 'name', 'category', 'description', 'overall_rating',
                                 'overall_reviewcount', 'img_url', 'link', 'sim_score']].drop_duplicates()
-    
+
     results = []
     for _, candle in unique_candles.iterrows():
         candle_reviews = merged_df[merged_df['id'] == candle['id']]
