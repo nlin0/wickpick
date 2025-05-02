@@ -155,7 +155,8 @@ def candles_search():
             'reviews': [],
             'sim_score': candle['sim_score'],
             'svd_labels_new': similarity.top_words_by_id[int(candle['id']) - 1],
-            'svd_dim_labels_values': similarity.svd_dim_labels_values(int(candle['id']) - 1)
+            'svd_dim_labels_values': similarity.svd_dim_labels_values(int(candle['id']) - 1),
+            'similar_candles': similarity.find_n_similar_candles(int(candle['id']) - 1, n=3)
         }
 
         for _, review in candle_reviews.iterrows():
@@ -165,7 +166,7 @@ def candles_search():
             })
 
         results.append(candle_data)
-
+    print(json.dumps(results[0], indent=2))
     return json.dumps(results)
 
 if 'DB_NAME' not in os.environ:

@@ -522,10 +522,10 @@ class PandasSim:
         top_terms = feature_names[top_indices]
         return " ".join(top_terms)
     
-    def find_n_similar_candles(self, candle_id, n=5):
+    def find_n_similar_candles(self, candle_id, n=3):
         candle_name = self.candles.loc[candle_id, 'name']
         print(candle_name)
         candle_svd_vec = self.all_compressed_normed[candle_id]
         ranked_candles = self.all_compressed_normed.dot(candle_svd_vec)
         asort = np.argsort(-ranked_candles)
-        return [(self.candles.loc[i, 'name'], ranked_candles[i]) for i in asort if self.candles.loc[i, 'name'] != candle_name][:n]
+        return [{'name': self.candles.loc[i, 'name'], 'score': ranked_candles[i]} for i in asort if self.candles.loc[i, 'name'] != candle_name][:n]
