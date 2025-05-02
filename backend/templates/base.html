@@ -172,7 +172,7 @@
             .on("mouseover", function (event) {
               d3.select("#tooltip")
                 .style("visibility", "visible")
-                .html(`${d.axis}: ${d.value}`)
+                .html(`${d.axis}: ${d.value == 0 ? "" : "-" }${d.value}`)
                 .style("left", (event.pageX + 5) + "px")
                 .style("top", (event.pageY - 28) + "px");
             })
