@@ -549,5 +549,6 @@ class PandasSim:
         return [{
             'id': str(i + 1),
             'name': self.candles.loc[i, 'name'],
-            'score': ranked_candles[i]
+            'score': ranked_candles[i],
+            'img_url': self.candles.loc[i, 'img_url']
             } for i in asort if self.candles.loc[i, 'name'] != candle_name][:n]
