@@ -14,8 +14,6 @@ class PandasSim:
         self.reviews = reviews_df['review_body'].tolist()
         self.review_idx_to_candle_idx = {i: int(reviews_df.iloc[i]['candle_id']) for i in range(len(reviews_df))}
 
-        self.liked = [0 for _ in range(len(self.candles))]
-
         my_stop_words = [
             "scent", "notes", "note", "nice", "love", "favorite", "smells", "like", "fragrance", "time",
             "base", "top", "mid", "middle", "one", "two", "three", "oz", "ounce", "inch", "inches",
@@ -51,7 +49,7 @@ class PandasSim:
         self.top_words_by_id = {i: self.get_top_n_candle_dimensions(i) for i in range(len(self.candles))}
 
         # Get top 3 similar candles for each candle
-        self.similar_candles_by_id = {i: self.find_n_similar_candles(i, n=5) for i in range(len(self.candles))}
+        self.similar_candles_by_id = {i: self.find_n_similar_candles(i, n=6) for i in range(len(self.candles))}
 
         # prints each dim's top words + values across corpus
         # self.svd_dim_words_values(self.all_words_compressed)
@@ -378,7 +376,7 @@ class PandasSim:
         for dim in top_indices:
             results.append({
                 "label": svd_labels.get(dim),
-                "value": round(candle_svd_vec[dim], 3)
+                "value": round(abs(candle_svd_vec[dim]), 3)
             })
 
         return results
@@ -546,9 +544,12 @@ class PandasSim:
         candle_svd_vec = self.all_compressed_normed[candle_id]
         ranked_candles = self.all_compressed_normed.dot(candle_svd_vec)
         asort = np.argsort(-ranked_candles)
+        # Filter out duplicates by name
+        seen_names = {candle_name}  # Start with current candle name
+        asort = [i for i in asort if self.candles.loc[i, 'name'] not in seen_names and not seen_names.add(self.candles.loc[i, 'name'])][:n]
         return [{
             'id': str(i + 1),
             'name': self.candles.loc[i, 'name'],
             'score': ranked_candles[i],
             'img_url': self.candles.loc[i, 'img_url']
-            } for i in asort if self.candles.loc[i, 'name'] != candle_name][:n]
+            } for i in asort]

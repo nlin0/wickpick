@@ -46,162 +46,120 @@
     function generateSpiderChart(svdLabels, chartElement, visibility = "both") {
       // negative values become 0
       const posSVDLabels = svdLabels.map(d => ({
-        axis: d.label,
-        value: Math.max(0, d.value)
-      }));
-
-      // positive values become 0, negative values are absolute
-      const negSVDLabels = svdLabels.map(d => ({
-        axis: d.label,
-        value: Math.abs(Math.min(0, d.value))
+      axis: d.label,
+      value: d.value
       }));
 
       // clear the chartElement to avoid stacking multiple charts
       chartElement.selectAll("*").remove();
 
       const width = 500;
-      const height = 500;
-      const maxValue = Math.max(d3.max(posSVDLabels, d => d.value), d3.max(negSVDLabels, d => d.value)); // scaled to max value of pos and neg
+      const height = 400;
+      const padding = 35; // Added padding
+      const innerWidth = width - (padding * 2); // Inner width accounting for padding
+      const maxValue = d3.max(posSVDLabels, d => d.value);
       const angleSlice = (Math.PI * 2) / posSVDLabels.length;
 
       const svg = chartElement
-        .append("svg")
-        .attr("width", width)
-        .attr("height", height);
+      .append("svg")
+      .attr("width", width) 
+      .attr("height", height);
 
       const radialLine = d3.lineRadial()
-        .angle((d, i) => i * angleSlice)
-        .radius(d => (d.value / maxValue) * (width / 2 - 40));
+      .angle((d, i) => i * angleSlice)
+      .radius(d => (d.value / maxValue) * (innerWidth / 2 - 40));
 
       const posRadarData = posSVDLabels.concat(posSVDLabels[0]);
-      const negRadarData = negSVDLabels.concat(negSVDLabels[0]);
+
+      const iHateMyself = "rgb(214, 142, 135, 0.99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999)"
+      const iHateMyself2 = "rgb(214, 142, 135, 0.333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333)"
 
       // pos values line
       if (visibility == "both" || visibility == "pos") {
-        svg.append("path")
-          .datum(posRadarData)
-          .attr("d", radialLine)
-          .attr("fill", "rgba(39, 227, 89, 0.8)")
-          .attr("stroke", "rgb(39, 227, 89)")
-          .attr("stroke-width", 2)
-          .attr("transform", `translate(${width / 2}, ${height / 2})`);
-      }
-
-      // neg values line
-      if (visibility == "both" || visibility == "neg") {
-        svg.append("path")
-          .datum(negRadarData)
-          .attr("d", radialLine)
-          .attr("fill", "rgba(255, 0, 0, 0.8")
-          .attr("stroke", "red")
-          .attr("stroke-width", 2)
-          .attr("transform", `translate(${width / 2}, ${height / 2})`);
+      svg.append("path")
+        .datum(posRadarData)
+        .attr("d", radialLine)
+        .attr("fill", iHateMyself2)
+        .attr("stroke", iHateMyself)
+        .attr("stroke-width", 2)
+        .attr("transform", `translate(${width/2}, ${height/2})`);
       }
 
       // axes and dashes
       const dashCount = 5;
       for (let j = 1; j <= dashCount; j++) {
-        const radius = (j / dashCount) * (width / 2 - 40);
-        svg.append("circle")
-          .attr("cx", width / 2)
-          .attr("cy", height / 2)
-          .attr("r", radius)
-          .attr("fill", "none")
-          .attr("stroke", "#821010")
-          .attr("stroke-dasharray", "4, 2");
+      const radius = (j / dashCount) * (innerWidth / 2 - 40);
+      svg.append("circle")
+        .attr("cx", width / 2)
+        .attr("cy", height / 2)
+        .attr("r", radius)
+        .attr("fill", "none")
+        .attr("stroke", "#821010")
+        .attr("stroke-dasharray", "4, 2");
       }
 
       // pos axes and labels
       posSVDLabels.forEach((d, i) => {
-        const angle = angleSlice * i;
-        svg.append("line")
-          .attr("x1", width / 2)
-          .attr("y1", height / 2)
-          .attr("x2", (width / 2) + (Math.cos(angle - Math.PI / 2) * (width / 2 - 40)))
-          .attr("y2", (height / 2) + (Math.sin(angle - Math.PI / 2) * (height / 2 - 40)))
-          .attr("stroke", "#821010");
+      const angle = angleSlice * i;
+      svg.append("line")
+        .attr("x1", width / 2)
+        .attr("y1", height / 2)
+        .attr("x2", (width / 2) + (Math.cos(angle - Math.PI / 2) * (innerWidth / 2 - 40)))
+        .attr("y2", (height / 2) + (Math.sin(angle - Math.PI / 2) * (innerWidth / 2 - 40)))
+        .attr("stroke", "#821010");
 
-        svg.append("text")
-          .attr("x", (width / 2) + (Math.cos(angle - Math.PI / 2) * (width / 2 - 10)))
-          .attr("y", (height / 2) + (Math.sin(angle - Math.PI / 2) * (height / 2 - 30)))
-          .text(d.axis)
-          .attr("font-size", "12px")
-          .attr("text-anchor", "middle")
-          .style("fill", "rgba(132, 12, 12, 0.587)")
-          .style("font-family", "'Kanit', sans-serif");
+      svg.append("text")
+        .attr("x", (width / 2) + (Math.cos(angle - Math.PI / 2) * (innerWidth / 2 - 10)))
+        .attr("y", (height / 2) + (Math.sin(angle - Math.PI / 2) * (innerWidth / 2 - 30)))
+        .text(d.axis)
+        .attr("font-size", "12px")
+        .attr("text-anchor", "middle")
+        .style("fill", "rgba(132, 12, 12, 0.587)")
+        .style("font-family", "'Kanit', sans-serif");
 
-        if (visibility == "both" || visibility == "pos") {
-          const pointX = (width / 2) + (Math.cos(angle - Math.PI / 2) * (d.value / maxValue) * (width / 2 - 40));
-          const pointY = (height / 2) + (Math.sin(angle - Math.PI / 2) * (d.value / maxValue) * (height / 2 - 40));
+      if (visibility == "both" || visibility == "pos") {
+        const pointX = (width / 2) + (Math.cos(angle - Math.PI / 2) * (d.value / maxValue) * (innerWidth / 2 - 40));
+        const pointY = (height / 2) + (Math.sin(angle - Math.PI / 2) * (d.value / maxValue) * (innerWidth / 2 - 40));
 
-          svg.append("circle")
-            .attr("cx", pointX)
-            .attr("cy", pointY)
-            .attr("r", 5)
-            .attr("fill", "rgb(39, 227, 89)")
-            .on("mouseover", function (event) {
-              d3.select("#tooltip")
-                .style("visibility", "visible")
-                .html(`${d.axis}: ${d.value}`)
-                .style("left", (event.pageX + 5) + "px")
-                .style("top", (event.pageY - 28) + "px");
-            })
-            .on("mousemove", function (event) {
-              d3.select("#tooltip")
-                .style("left", (event.pageX + 5) + "px")
-            })
-            .on("mouseout", function () {
-              d3.select("#tooltip")
-                .style("visibility", "hidden");
-            });
-        }
-      });
-
-      // neg axes and labels
-      if (visibility == "both" || visibility == "neg") {
-        negSVDLabels.forEach((d, i) => {
-          const angle = angleSlice * i
-          const pointX = (width / 2) + (Math.cos(angle - Math.PI / 2) * (d.value / maxValue) * (width / 2 - 40));
-          const pointY = (height / 2) + (Math.sin(angle - Math.PI / 2) * (d.value / maxValue) * (height / 2 - 40));
-
-          svg.append("circle")
-            .attr("cx", pointX)
-            .attr("cy", pointY)
-            .attr("r", 5)
-            .attr("fill", "red")
-            .on("mouseover", function (event) {
-              d3.select("#tooltip")
-                .style("visibility", "visible")
-                .html(`${d.axis}: ${d.value == 0 ? "" : "-"}${d.value}`)
-                .style("left", (event.pageX + 5) + "px")
-                .style("top", (event.pageY - 28) + "px");
-            })
-            .on("mousemove", function (event) {
-              d3.select("#tooltip")
-                .style("left", (event.pageX + 5) + "px")
-            })
-            .on("mouseout", function () {
-              d3.select("#tooltip")
-                .style("visibility", "hidden");
-            });
+        svg.append("circle")
+        .attr("cx", pointX)
+        .attr("cy", pointY)
+        .attr("r", 5)
+        .attr("fill", iHateMyself)
+        .on("mouseover", function (event) {
+          d3.select("#tooltip")
+          .style("visibility", "visible")
+          .html(`${d.axis}: ${d.value}`)
+          .style("left", (event.pageX + 5) + "px")
+          .style("top", (event.pageY - 28) + "px");
+        })
+        .on("mousemove", function (event) {
+          d3.select("#tooltip")
+          .style("left", (event.pageX + 5) + "px")
+        })
+        .on("mouseout", function () {
+          d3.select("#tooltip")
+          .style("visibility", "hidden");
         });
       }
+      });
 
       // tooltip
       const tooltip = d3.select("body").append("div")
-        .attr("id", "tooltip")
-        .style("position", "absolute")
-        .style("visibility", "hidden")
-        .style("background-color", "#fff")
-        .style("padding", "5px")
-        .style("border-radius", "3px")
-        .style("box-shadow", "0px 0px 10px rgba(0, 0, 0, 0.1)")
-        .style("font-size", "12px")
-        .style("color", "#333")
-        .style("z-index", "10000");
+      .attr("id", "tooltip")
+      .style("position", "absolute")
+      .style("visibility", "hidden")
+      .style("background-color", "#fff")
+      .style("padding", "5px")
+      .style("border-radius", "3px")
+      .style("box-shadow", "0px 0px 10px rgba(0, 0, 0, 0.1)")
+      .style("font-size", "12px")
+      .style("color", "#333")
+      .style("z-index", "10000");
     }
 
     function generateSimilarCandles(similarCandles, chartElement) {
+      chartElement.selectAll("*").remove();
       similarCandles.forEach(d => {
         const candleElement = chartElement.append("div").attr("class", "similar-candles");
 
@@ -216,6 +174,10 @@
           .attr("width", 100)
           .attr("height", 100)
           .attr("class", "sim-candle-image");
+
+        candleElement.append("text")
+          .text(`${(d.score * 100).toFixed(1)}% similar`)
+          .attr("class", "sim-score-lite");
 
         candleElement.append("button")
           .text("View Details")
@@ -500,14 +462,6 @@
                 </div>
                   <div class="svd-info">
                     <h4>Latent Dimensions</h4>
-                    <div class="checkboxes">
-                      <label class="checkbox">
-                        <input type="checkbox" id="pos-checkbox" checked /> Positive
-                      </label>
-                      <label class="checkbox">
-                        <input type="checkbox" id="neg-checkbox" checked /> Negative
-                      </label>
-                    </div>
                     <div id="spider-chart"></div>
                   </div>
 
@@ -515,7 +469,7 @@
                 
                   <h4>Relevant Tags</h4>
                   <div class="tag-list">
-                    ${row.svd_labels_new.map(([label, value]) => `<p class="label-svd">${label}:\n${value.toFixed(3)}</p>`).join("")}
+                    ${row.svd_labels_new.map(([label, value]) => `<p class="label-svd">${label}: ${(value*100).toFixed(1)}%</p>`).join("")}
                   </div>
 
                   <p class="pop-descr">
@@ -548,28 +502,28 @@
 
             const chartElement = d3.select(`#popup-${row.id}`).select("#spider-chart");
 
-            const posCheckbox = popup.querySelector("#pos-checkbox");
-            const negCheckbox = popup.querySelector("#neg-checkbox");
+            // const posCheckbox = popup.querySelector("#pos-checkbox");
+            // const negCheckbox = popup.querySelector("#neg-checkbox");
 
             let visibility = "both"; // initial state
 
             // toggles visibility based on checkboxes
             function updateChart() {
-              if (posCheckbox.checked && negCheckbox.checked) {
-                visibility = "both";
-              } else if (posCheckbox.checked) {
-                visibility = "pos";
-              } else if (negCheckbox.checked) {
-                visibility = "neg";
-              } else {
-                visibility = "none";
-              }
+              // if (posCheckbox.checked && negCheckbox.checked) {
+              //   visibility = "both";
+              // } else if (posCheckbox.checked) {
+              //   visibility = "pos";
+              // } else if (negCheckbox.checked) {
+              //   visibility = "neg";
+              // } else {
+              //   visibility = "none";
+              // }
 
               generateSpiderChart(row.svd_dim_labels_values, chartElement, visibility);
             }
 
-            posCheckbox.addEventListener("change", updateChart);
-            negCheckbox.addEventListener("change", updateChart);
+            // posCheckbox.addEventListener("change", updateChart);
+            // negCheckbox.addEventListener("change", updateChart);
 
             updateChart(); // intiial display
 
