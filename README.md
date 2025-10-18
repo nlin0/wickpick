@@ -7,12 +7,16 @@ Nicole Lin • Jolly Zheng • Elaine Wu • Asen Ou • Joanna Lin
 
 ## 🌟 Overview
 
-WickPick is an NLP-powered web application that recommends candles based on a user’s descriptive mood or scent query.  
-Users can type something like “**cozy autumn night**” or “**fresh and clean after a storm**,” and WickPick will return candles that best match the vibe. This works even if you misspell words like “chrismas” or “lamon.”
+WickPick is an NLP-powered web application that recommends candles based on a user’s descriptive mood or scent query.   Users can type something like “**cozy autumn night**” or “**fresh and clean after a storm**,” and WickPick will return candles that best match the vibe. This works even if you misspell words like “chrismas” or “lamon.”
 
-WickPick combines information retrieval, text mining, and natural language processing techniques.
+Our goal was to make search by feeling possible. We wanted to translate human emotions and vague scent descriptions into accurate, data-driven product matches. WickPick combines information retrieval, text mining, and natural language processing techniques.
 
-Our goal was to make search by feeling possible. We wanted to translate human emotions and vague scent descriptions into accurate, data-driven product matches.
+| Example Input | Top Recommendations | Why It Works |
+|----------------|---------------------|---------------|
+| **“calm and serene after a long day”** | Lavender Vanilla, Catching Rays, Breeze | Uses mood-based keywords + cosine similarity |
+| **“kitchen dessert”** | Kitchen Spice, Jelly Beans, Cinnamon Stick | Matches food-related terms and co-occurrence patterns |
+| **“tropical beach citrus”** | Bahama Breeze, Coconut Beach, Sicilian Lemon | Captures summer/fruity scent clusters |
+| **“tangerine & vanilla”** | Tangerine & Vanilla, Vanilla Cupcake, Lemon Lavender | Identifies exact match + semantic relatives |
 
 ## 🔍 What Makes WickPick Unique
 
@@ -38,10 +42,3 @@ The front end displays results as clickable cards that open detailed pop-ups wit
 | **Data Processing & ML** | pandas, NumPy, scikit-learn, NLTK |
 | **Algorithms Implemented** | TF-IDF, Cosine Similarity, Jaccard + Edit Distance, SVD, Rocchio |
 | **Data Source** | Custom web-scraped dataset of 100+ Yankee Candles (names, descriptions, reviews, fragrance families) |
-
-| Example Input | Top Recommendations | Why It Works |
-|----------------|---------------------|---------------|
-| **“calm and serene after a long day”** | Lavender Vanilla, Catching Rays, Breeze | Uses mood-based keywords + cosine similarity |
-| **“kitchen dessert”** | Kitchen Spice, Jelly Beans, Cinnamon Stick | Matches food-related terms and co-occurrence patterns |
-| **“tropical beach citrus”** | Bahama Breeze, Coconut Beach, Sicilian Lemon | Captures summer/fruity scent clusters |
-| **“tangerine & vanilla”** | Tangerine & Vanilla, Vanilla Cupcake, Lemon Lavender | Identifies exact match + semantic relatives |
