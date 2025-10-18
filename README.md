@@ -2,6 +2,7 @@
 
 **Team Members:**  
 Nicole Lin • Jolly Zheng • Elaine Wu • Asen Ou • Joanna Lin
+
 [**Live Demo**](http://4300showcase.infosci.cornell.edu:5253/)
 
 ## 🌟 Overview
