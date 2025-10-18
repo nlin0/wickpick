@@ -14,19 +14,19 @@ WickPick combines information retrieval, text mining, and natural language proce
 
 Our goal was to make search by feeling possible. We wanted to translate human emotions and vague scent descriptions into accurate, data-driven product matches.
 
-## What Makes WickPick Unique
+## 🔍 What Makes WickPick Unique
 
-🧠 **Intelligent Recommendations:**  
+**Intelligent Recommendations:**  
 WickPick analyzes candle names, descriptions, and real user reviews using machine learning and natural language processing.
 
-🔍 **Smart Search Algorithms:**  
+**Smart Search Algorithms:**  
 We combined TF-IDF, Cosine Similarity, Jaccard Similarity, and Edit Distance to handle fuzzy matches and typos.  
 To find deeper, hidden scent relationships, we added SVD (Singular Value Decomposition) for semantic dimensionality reduction.
 
-🪄 **Adaptive Query Refinement (Rocchio Algorithm):**  
+**Adaptive Query Refinement (Rocchio Algorithm):**  
 Our app *learns* from user feedback by adjusting queries based on relevant results and improving recommendations over time.
 
-🎨 **Interactive Interface:**  
+**Interactive Interface:**  
 The front end displays results as clickable cards that open detailed pop-ups with similarity scores, SVD dimensions, and real candle reviews. Users can also filter by fragrance family like “Fresh & Clean” or “Floral.”
 
 ## 🧰 Tech Stack
