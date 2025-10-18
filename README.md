@@ -5,7 +5,7 @@ Nicole Lin • Jolly Zheng • Elaine Wu • Asen Ou • Joanna Lin
 
 [**Live Demo**](http://4300showcase.infosci.cornell.edu:5253/)
 
-## Overview
+## Summary
 
 WickPick is an NLP-powered web application that recommends candles based on a user’s descriptive mood or scent query.   Users can type something like “**cozy autumn night**” or “**fresh and clean after a storm**,” and WickPick will return candles that best match the vibe. This works even if you misspell words like “chrismas” or “lamon.”
 
